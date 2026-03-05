@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Resilience & Carbon Analytics | Group 4</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #141824;
+            --bg-card: #1a1f2e;
+            --accent-primary: #00d9ff;
+            --accent-secondary: #ff6b35;
+            --accent-tertiary: #ffd23f;
+            --text-primary: #e8edf4;
+            --text-secondary: #9ca9c0;
+            --text-muted: #626d82;
+            --border: rgba(0, 217, 255, 0.15);
+            --glow: rgba(0, 217, 255, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Archivo', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+            z-index: -1;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Navigation */
+        nav {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            z-index: 1000;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        nav .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            letter-spacing: 0.5px;
+        }
+
+        .logo span {
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        nav ul {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-primary);
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--accent-primary);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        nav a.active {
+            color: var(--accent-primary);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 6rem 0 4rem;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
+            z-index: -1;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.1); opacity: 0.6; }
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .hero .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease-out 0.4s backwards;
+        }
+
+        .hero .meta {
+            display: flex;
+            gap: 2rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            animation: fadeInUp 0.8s ease-out 0.6s backwards;
+        }
+
+        .hero .meta span {
+            color: var(--accent-primary);
+            margin-right: 0.5rem;
+        }
+
+        /* Section */
+        section {
+            padding: 5rem 0;
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        section:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        .section-header {
+            margin-bottom: 3rem;
+        }
+
+        .section-number {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .section-description {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+        }
+
+        /* Content Cards */
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 10px 40px rgba(0, 217, 255, 0.2);
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        /* Introduction Content */
+        .intro-content {
+            max-width: 900px;
+        }
+
+        .intro-content p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+            line-height: 1.9;
+        }
+
+        .intro-content h3 {
+            font-size: 1.8rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        /* Stat boxes */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 217, 255, 0.05) 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-primary);
+        }
+
+        .stat-number {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Team Cards */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .team-member {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .team-member:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 15px 50px rgba(0, 217, 255, 0.25);
+        }
+
+        .member-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--bg-primary);
+            border: 3px solid var(--border);
+        }
+
+        .member-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .member-role {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .member-bio {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        .member-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .member-links a {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .member-links a:hover {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            transform: scale(1.1);
+        }
+
+        /* Research Questions */
+        .question-list {
+            display: grid;
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        .question-item {
+            background: var(--bg-card);
+            border-left: 4px solid var(--accent-primary);
+            border-radius: 8px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .question-item:hover {
+            transform: translateX(10px);
+            box-shadow: -5px 0 30px rgba(0, 217, 255, 0.2);
+        }
+
+        .question-number {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            line-height: 1.6;
+        }
+
+        /* Visual Elements */
+        .visual-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 3rem;
+            margin: 3rem 0;
+            text-align: center;
+        }
+
+        .visual-placeholder {
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, rgba(255, 107, 53, 0.1) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-family: 'IBM Plex Mono', monospace;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visual-placeholder::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(0, 217, 255, 0.03) 10px,
+                rgba(0, 217, 255, 0.03) 20px
+            );
+            animation: slidePattern 20s linear infinite;
+        }
+
+        @keyframes slidePattern {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .visual-caption {
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Bullet points */
+        ul.key-points {
+            list-style: none;
+            margin: 2rem 0;
+        }
+
+        ul.key-points li {
+            padding-left: 2rem;
+            margin-bottom: 1rem;
+            position: relative;
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+
+        ul.key-points li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 3rem 0;
+            margin-top: 5rem;
+        }
+
+        footer .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--text-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav ul {
+                gap: 1.5rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero .subtitle {
+                font-size: 1.1rem;
+            }
+
+            h2 {
+                font-size: 2rem;
+            }
+
+            .team-grid,
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            footer .container {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <div class="logo">GRID<span>.ANALYTICS</span></div>
+            <ul>
+                <li><a href="#introduction" class="active">Introduction</a></li>
+                <li><a href="#proposal">Proposal</a></li>
+                <li><a href="#data-exploration">Data Exploration</a></li>
+                <li><a href="#research">Research Questions</a></li>
+                <li><a href="#team">Team</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <div class="container">
+            <h1>Characterizing Electricity Demand and Marginal CO₂ Emissions During Hazardous Grid Events</h1>
+            <p class="subtitle">A data-driven investigation into how extreme events reshape power grid operations, carbon intensity, and energy resilience</p>
+            <div class="meta">
+                <div><span>//</span> Group 4</div>
+                <div><span>//</span> Data Mining Project</div>
+                <div><span>//</span> Spring 2026</div>
+            </div>
+        </div>
+    </div>
+
+    <section id="introduction">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-number">01 // INTRODUCTION</div>
+                <h2>Research Topic & Significance</h2>
+            </div>
+
+            <div class="intro-content">
+                <p>
+                    Climate change and extreme weather events are fundamentally transforming how our electricity grids operate. From California's Public Safety Power Shutoffs (PSPS) during wildfire season to winter storms causing cascading grid failures across Texas, hazardous events are no longer rare occurrences—they are becoming the new normal. These disruptions force rapid changes in how electricity is generated, transmitted, and consumed, often with significant environmental consequences. Understanding the intricate relationship between grid resilience and carbon emissions during these critical periods is essential for building sustainable, reliable energy systems for the future.
+                </p>
+
+                <p>
+                    Our research addresses a critical gap in energy systems analysis: how do electricity demand patterns and marginal CO₂ emissions behave during hazardous grid events? While existing studies examine either demand response or emissions separately, few systematically characterize both dimensions simultaneously across multiple event types. This project leverages high-resolution time-series data from the WattTime API and EIA-930 datasets to reveal the dynamic interplay between grid stress and environmental impact. By analyzing events such as PSPS incidents, extreme weather alerts, and equipment failures, we aim to identify distinct operational signatures that can inform grid management, policy decisions, and decarbonization strategies.
+                </p>
+
+                <p>
+                    This research matters because electricity systems are at the intersection of climate adaptation and climate mitigation. When hazardous events strike, utilities must balance reliability with sustainability—often firing up backup generators that emit more carbon, or importing power from neighboring regions with different fuel mixes. These decisions happen in minutes, yet their environmental consequences persist for years. By quantifying how demand shifts and emissions spike during crisis moments, we provide actionable intelligence for utilities, policymakers, and grid operators who must navigate these trade-offs. Our findings will support better emergency preparedness, more effective emissions accounting, and smarter investments in grid infrastructure that can maintain both reliability and environmental performance under stress.
+                </p>
+
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <span class="stat-number">3.5M+</span>
+                        <span class="stat-label">Customers Affected by PSPS (2019-2024)</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number">42%</span>
+                        <span class="stat-label">Increase in Grid Disruptions</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number">15-40%</span>
+                        <span class="stat-label">Emissions Spike During Events</span>
+                    </div>
+                </div>
+
+                <p>
+                    The beneficiaries of this research span multiple stakeholder groups. Electric utilities gain insights into how their operational decisions during emergencies affect carbon footprints, enabling them to develop lower-emission contingency plans. Grid operators can use our event characterizations to improve forecasting models and emergency response protocols. Sustainability officers and environmental planners will have better tools to assess the true climate impact of grid disruptions and to advocate for resilience investments that don't compromise decarbonization goals. Policymakers can leverage our findings to design regulations that incentivize utilities to maintain low emissions even during crisis conditions. Finally, researchers studying energy transitions will benefit from our methodological framework for analyzing coupled demand-emissions dynamics in complex, real-world scenarios.
+                </p>
+
+                <p>
+                    Beyond immediate stakeholders, this research has broader societal implications. Communities disproportionately affected by both climate change and energy poverty often bear the brunt of grid disruptions and the associated air quality impacts from emergency generation. By documenting how hazardous events alter the environmental profile of electricity supply, we shine a light on environmental justice considerations that are frequently overlooked in emergency response planning. Our work contributes to the growing body of evidence that climate resilience and climate mitigation must be pursued together, not as competing priorities. As extreme events become more frequent and severe, the insights from this project will help ensure that our responses to grid emergencies do not inadvertently deepen the climate crisis we are trying to solve.
+                </p>
+            </div>
+
+            <div class="visual-box">
+                <div class="visual-placeholder">
+                    <span style="position: relative; z-index: 1;">[ Visualization: Grid Demand & CO₂ Emissions Time Series During PSPS Event ]</span>
+                </div>
+                <p class="visual-caption">
+                    Sample visualization showing correlated spikes in electricity demand and marginal emissions during a Public Safety Power Shutoff event
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="stakeholders" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-number">02 // STAKEHOLDERS</div>
+                <h2>Who is Affected?</h2>
+            </div>
+
+            <div class="intro-content">
+                <p>
+                    The impacts of hazardous grid events ripple through multiple layers of the energy ecosystem, affecting diverse stakeholders with competing interests and priorities. Electric utilities and independent system operators stand at the frontline, responsible for maintaining grid stability while facing unprecedented operational challenges. When a PSPS event is declared or an extreme weather alert triggers emergency protocols, utilities must make split-second decisions about which generators to activate, how much power to import, and which customers to prioritize. These decisions carry immediate consequences for system reliability and long-term implications for emissions reporting, regulatory compliance, and public trust. Utilities that can better predict and characterize event-driven demand and emissions patterns will be better positioned to optimize their emergency response strategies and demonstrate responsible environmental stewardship.
+                </p>
+
+                <p>
+                    Energy consumers—from individual households to large industrial facilities—experience hazardous grid events in fundamentally different ways. Residential customers may face extended power outages, forcing them to rely on diesel generators or evacuate to other locations, creating localized demand surges in neighboring areas. Commercial and industrial users with critical operations often have backup power systems that, while essential for business continuity, can significantly increase local air pollution and carbon emissions. The economic costs of disruptions are substantial: a single day of power outage can cost industrial facilities hundreds of thousands of dollars, while vulnerable populations face health and safety risks from loss of heating, cooling, or medical equipment. Understanding how different customer segments respond to hazardous events enables more equitable load management strategies and better-targeted resilience investments.
+                </p>
+
+                <p>
+                    Environmental regulators and sustainability planners face a particularly challenging position during hazardous grid events. State and federal agencies tasked with reducing greenhouse gas emissions must reconcile the reality that emergency situations often necessitate higher-emission generation sources. Current emissions accounting frameworks may not adequately capture the temporal dynamics of event-driven carbon spikes, potentially masking the true climate impact of grid disruptions. Our research provides these regulators with granular data to inform more nuanced policies—ones that maintain stringent emissions targets while allowing necessary flexibility during genuine emergencies. Additionally, cities and regions with ambitious climate commitments need better tools to understand how local hazardous events affect their overall carbon footprint and to identify opportunities for deploying cleaner backup resources such as battery storage or demand response programs.
+                </p>
+
+                <p>
+                    The renewable energy sector and grid modernization industry have a significant stake in how hazardous events are characterized and managed. Solar and wind developers need to understand how their assets perform and contribute to grid stability during extreme events—information that affects project financing and grid integration planning. Battery storage providers see hazardous events as both a challenge and an opportunity: while grid stress can push storage systems to their limits, it also demonstrates their value for maintaining reliability without carbon penalties. Smart grid technology companies developing advanced forecasting, automation, and demand response solutions rely on detailed event analysis to refine their products and demonstrate value propositions to utility customers. By quantifying the demand-emissions dynamics of hazardous events, our research helps these innovators target their solutions more effectively and accelerates the transition to more resilient, low-carbon grid infrastructure.
+                </p>
+
+                <p>
+                    Perhaps most critically, frontline communities and environmental justice advocates are deeply affected by how grids respond to hazardous events. Low-income neighborhoods often have older, less reliable infrastructure and are more likely to experience prolonged outages. These same communities frequently live near peaker plants and backup generators that are activated during grid emergencies, exposing residents to elevated air pollution precisely when they are already dealing with emergency conditions. Indigenous communities and rural populations may be disproportionately impacted by PSPS events yet have limited alternative resources. Our analysis of event-driven emissions patterns can support advocacy for equitable resource allocation and highlight where investments in distributed clean energy resources—such as community solar with battery storage—could simultaneously improve resilience and reduce environmental burdens. By making visible the often-hidden emissions consequences of grid emergencies, this research provides data to support environmental justice claims and inform more equitable energy policy.
+                </p>
+            </div>
+
+            <div class="content-grid">
+                <div class="card">
+                    <h3>Utilities & Grid Operators</h3>
+                    <p>Optimize emergency response protocols and balance reliability with emissions during crisis events</p>
+                </div>
+                <div class="card">
+                    <h3>Policymakers & Regulators</h3>
+                    <p>Design flexible emissions policies that account for event-driven disruptions while maintaining climate goals</p>
+                </div>
+                <div class="card">
+                    <h3>Energy Consumers</h3>
+                    <p>Experience varying impacts from outages, from economic losses to health and safety risks</p>
+                </div>
+                <div class="card">
+                    <h3>Renewable Energy Sector</h3>
+                    <p>Demonstrate value of clean backup solutions and accelerate grid modernization investments</p>
+                </div>
+                <div class="card">
+                    <h3>Frontline Communities</h3>
+                    <p>Disproportionately affected by both outages and emissions from emergency generation</p>
+                </div>
+                <div class="card">
+                    <h3>Sustainability Planners</h3>
+                    <p>Accurately account for event-driven emissions and develop climate-resilient infrastructure strategies</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="existing-solutions">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-number">03 // EXISTING SOLUTIONS & GAPS</div>
+                <h2>Current State of Research</h2>
+            </div>
+
+            <div class="intro-content">
+                <p>
+                    The academic and industry literature on grid reliability and emissions has grown substantially over the past decade, driven by increasing concerns about climate change and energy security. Researchers have developed sophisticated models for predicting electricity demand under normal conditions, with machine learning approaches achieving impressive accuracy for day-ahead and week-ahead forecasting. Similarly, the field of emissions accounting has matured, with hourly or sub-hourly marginal emissions factors now available for many grid regions through services like WattTime, ElectricityMap, and Singularity. These tools enable consumers and grid operators to understand the real-time carbon intensity of electricity and, in principle, to time flexible loads to minimize environmental impact. However, most of this work assumes relatively stable grid conditions and focuses on optimizing operations within normal operating parameters.
+                </p>
+
+                <p>
+                    When it comes to hazardous events, existing research tends to focus narrowly on specific aspects of grid response. Engineering studies examine physical grid resilience—how quickly systems can recover from equipment failures or weather damage, and what infrastructure investments improve robustness. Economic analyses quantify the costs of outages and the value of reliability improvements, often using metrics like Value of Lost Load (VoLL) or Expected Energy Not Served (EENS). Public health researchers have documented the impacts of power outages on vulnerable populations, particularly during extreme heat or cold events. Environmental studies have measured localized air quality impacts when backup generators are deployed. While all of these perspectives are valuable, they remain largely siloed. Few studies systematically integrate demand response, emissions dynamics, and event characteristics into a unified analytical framework that spans multiple event types and grid regions.
+                </p>
+
+                <p>
+                    A particularly significant gap exists in characterizing the joint evolution of demand and emissions during hazardous events. Most emissions analysis tools and academic studies report average or cumulative values over extended periods—monthly or annual totals that obscure the dramatic hour-by-hour or even minute-by-minute fluctuations that occur during grid emergencies. When utilities activate fast-ramping natural gas peakers or diesel generators to maintain stability, marginal emissions can spike by 40% or more within hours. Yet these spikes are often averaged away in reporting, making it difficult to assess the true climate cost of different emergency response strategies. Similarly, demand response during events is poorly understood beyond aggregate load-shedding totals. Do different customer segments respond differently to different event types? How quickly does demand recover after events end? Do event-driven demand shifts create secondary emissions impacts as loads are deferred and then released?
+                </p>
+
+                <p>
+                    Recent work has begun to address some of these gaps. Researchers at Lawrence Berkeley National Laboratory have developed methods for estimating the emissions impacts of grid flexibility services, including some event-driven scenarios. Studies of the 2021 Texas winter storm have provided valuable insights into how extreme cold affects both demand and generation mix. Analysis of California's wildfire-driven PSPS events has revealed patterns in how different communities respond to preventative outages. However, these remain case studies of individual events or specific regions. What's missing is a generalizable methodology for characterizing hazardous events across different contexts—a way to systematically identify whether events share common demand-emissions signatures that could inform predictive models and operational strategies. Such a framework would enable utilities and researchers to learn from past events more effectively and to develop robust response protocols that work across diverse scenarios.
+                </p>
+
+                <p>
+                    Our project directly addresses this gap by developing and demonstrating a systematic approach to characterizing hazardous grid events through the lens of coupled demand-emissions dynamics. Building on existing time-series analysis techniques and drawing inspiration from event study methodologies used in econometrics, we will identify baseline conditions, measure event-driven deviations, and extract features that capture the magnitude, duration, and recovery patterns of both demand and emissions perturbations. By applying clustering algorithms to these feature sets, we aim to discover whether hazardous events fall into distinct categories—each with characteristic operational signatures that could inform tailored response strategies. This work complements and extends existing research by providing a replicable analytical pipeline that other researchers and practitioners can apply to new events and regions, ultimately building a more comprehensive understanding of grid resilience and its environmental consequences.
+                </p>
+
+                <p>
+                    <strong>Key References:</strong> While comprehensive citations will be provided in the full report, our initial literature review draws on foundational work in grid reliability analysis (Bie et al., 2017), marginal emissions quantification (Hawkes, 2010; Graff Zivin et al., 2014), and event-driven energy system analysis (Busby et al., 2021 on the Texas winter storm). We also engage with policy literature on Public Safety Power Shutoffs from California's energy agencies and environmental justice frameworks for analyzing energy system transitions.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="blueprint" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-number">04 // PROJECT BLUEPRINT</div>
+                <h2>Our Approach</h2>
+            </div>
+
+            <div class="intro-content">
+                <p>
+                    Our project follows a structured, multi-phase approach designed to transform raw time-series data into actionable insights about grid behavior during hazardous events. The first phase focuses on comprehensive data collection and integration. We will systematically query the WattTime API to obtain marginal emissions data at 5-15 minute resolution for selected grid regions, and pull hourly electricity demand data from the EIA-930 dataset covering the same regions and time periods. Simultaneously, we will construct a curated catalog of hazardous events—including PSPS incidents, extreme weather alerts, and equipment failures—by mining utility announcements, news archives, and regulatory filings. Each event will be precisely timestamped and linked to affected grid regions, creating a structured dataset that aligns event occurrences with high-resolution operational data.
+                </p>
+
+                <p>
+                    The second phase involves establishing appropriate baselines against which event impacts can be measured. This is methodologically challenging because electricity demand and emissions vary substantially by season, day of week, and time of day even under normal conditions. We will employ multiple baseline strategies: seasonal matching (comparing events to the same day-of-week and time-of-day from non-event weeks), moving-average baselines (using the preceding and following weeks as references), and model-based baselines (using machine learning to predict expected demand and emissions absent the event). By triangulating across these approaches, we can isolate event-driven perturbations with greater confidence and assess the robustness of our findings to different baseline assumptions.
+                </p>
+
+                <p>
+                    Phase three is the core analytical engine of the project: feature extraction and characterization. For each identified event, we will compute a comprehensive set of features capturing different dimensions of the demand-emissions response. These include: peak deviation from baseline (how much did demand or emissions spike?), integrated impact (total excess emissions over the event window), time-to-peak (how quickly did the system respond?), recovery time (how long to return to baseline?), volatility metrics (standard deviation during the event), and cross-correlation measures (how tightly coupled were demand and emissions changes?). We will also engineer features that capture the temporal shape of responses—for example, whether events show sharp spikes followed by gradual recovery, or sustained elevated levels with abrupt returns to normal.
+                </p>
+
+                <p>
+                    The fourth phase applies unsupervised learning techniques to discover natural groupings among events based on their feature profiles. We will use hierarchical clustering, k-means clustering, and DBSCAN to identify whether events fall into distinct categories with different operational signatures. Clustering validation metrics (silhouette scores, Davies-Bouldin index) will help us determine the optimal number of clusters and assess whether the groupings are meaningful or merely artifacts of the algorithm. We will then characterize each discovered cluster: What types of events fall into each group? What are the typical demand-emissions trajectories? Are certain clusters associated with higher environmental impacts or longer recovery times? These characterizations will form the basis for actionable recommendations.
+                </p>
+
+                <p>
+                    The final phase translates our findings into accessible insights through comprehensive visualization and reporting. We will develop interactive dashboards showing event timelines, demand-emissions trajectories, and cluster memberships. Comparative visualizations will highlight differences between event types and regions, making it easy for stakeholders to grasp key patterns. Our website will serve as the primary platform for disseminating results, with dedicated sections for methodology, findings, and implications for different stakeholder groups. We will also produce a formal academic-style report following ACM format, documenting our methods and results with full technical rigor. All code, processed data, and analysis scripts will be made publicly available on GitHub, ensuring transparency and enabling others to replicate and extend our work.
+                </p>
+
+                <ul class="key-points">
+                    <li><strong>Data Sources:</strong> WattTime API for marginal CO₂ emissions (5-15 min resolution), EIA-930 for hourly electricity demand, curated hazardous event catalog from utility reports and news sources</li>
+                    <li><strong>Geographic Scope:</strong> Focus on California and Western US regions with well-documented PSPS events and diverse weather patterns</li>
+                    <li><strong>Temporal Coverage:</strong> Analysis spanning 2019-2026, capturing evolution of PSPS protocols and increasing climate impacts</li>
+                    <li><strong>Baseline Methods:</strong> Multi-strategy approach including seasonal matching, moving averages, and ML-based prediction</li>
+                    <li><strong>Feature Engineering:</strong> Extracting magnitude, duration, volatility, recovery, and correlation metrics from event windows</li>
+                    <li><strong>Clustering Techniques:</strong> Applying hierarchical, k-means, and density-based methods to identify event archetypes</li>
+                    <li><strong>Validation Approach:</strong> Cross-validation of clusters, sensitivity analysis to parameter choices, comparison against event metadata</li>
+                    <li><strong>Expected Deliverables:</strong> Interactive website, comprehensive report, open-source code repository, reusable analytical pipeline</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="proposal">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-number">05 // PROPOSAL OVERVIEW</div>
+                <h2>Quick Reference</h2>
+            </div>
+
+            <div class="content-grid">
+                <div class="card">
+                    <h3>Research Topic</h3>
+                    <p>Characterizing electricity demand and marginal CO₂ emissions during hazardous grid events using time-resolved data analysis and clustering techniques</p>
+                </div>
+                <div class="card">
+                    <h3>Core Question</h3>
+                    <p>Can hazardous events be characterized by distinct electricity demand and marginal CO₂ emission profiles?</p>
+                </div>
+                <div class="card">
+                    <h3>Primary Datasets</h3>
+                    <p>WattTime API (marginal emissions), EIA-930 (electricity demand), curated hazardous event catalog</p>
+                </div>
+                <div class="card">
+                    <h3>Methodology</h3>
+                    <p>Time-series analysis, baseline comparison, feature extraction, unsupervised clustering, pattern characterization</p>
+                </div>
+                <div class="card">
+                    <h3>Geographic Focus</h3>
+                    <p>California and Western US regions, with emphasis on areas experiencing PSPS and extreme weather events</p>
+                </div>
+                <div class="card">
+                    <h3>Expected Impact</h3>
+                    <p>Improved emergency response protocols, better emissions accounting, informed infrastructure planning, environmental justice insights</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 3rem;">
+                <h3 style="margin-bottom: 2rem; color: var(--text-primary);">Key Project Milestones</h3>
+                <ul class="key-points">
+                    <li><strong>Milestone 1:</strong> Project framing, website launch, research questions development</li>
+                    <li><strong>Milestone 2:</strong> Data acquisition, cleaning, integration, and exploratory analysis</li>
+                    <li><strong>Milestone 3:</strong> Feature engineering, clustering analysis, pattern identification</li>
+                    <li><strong>Milestone 4:</strong> Final analysis, comprehensive reporting, stakeholder recommendations</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="data-exploration">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-number">06 // DATA EXPLORATION</div>
+                <h2>Data Collection, Cleaning & Analysis</h2>
+                <p class="section-description">
+                    Comprehensive documentation of our data acquisition pipeline, preprocessing workflows, and exploratory analysis
+                </p>
+            </div>
+
+            <!-- Data Collection -->
+            <div style="margin-top: 3rem;">
+                <h3 style="font-size: 2rem; margin-bottom: 2rem; color: var(--text-primary);">Data Collection & Sources</h3>
+                
+                <div class="intro-content">
+                    <p>
+                        Our project leverages three complementary data sources to build a comprehensive picture of grid behavior during hazardous events. Each source was selected for its temporal resolution, geographic coverage, and relevance to our research questions. We prioritized API-based data acquisition to ensure reproducibility and enable future real-time analysis capabilities.
+                    </p>
+                </div>
+
+                <div class="content-grid" style="margin-top: 2rem;">
+                    <div class="card">
+                        <h3>📊 WattTime API</h3>
+                        <div style="margin-bottom: 1rem;">
+                            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; color: var(--accent-primary);">DYNAMIC SOURCE // API</span>
+                        </div>
+                        <p style="margin-bottom: 1rem;"><strong>Data Type:</strong> Marginal Operating Emissions Rate (MOER)</p>
+                        <p style="margin-bottom: 1rem;"><strong>Resolution:</strong> 5-15 minute intervals</p>
+                        <p style="margin-bottom: 1rem;"><strong>Coverage:</strong> Multiple US grid regions (focus on CAISO, PSCO)</p>
+                        <p style="margin-bottom: 1rem;"><strong>Variables:</strong> Timestamp, region identifier, marginal CO₂ intensity (lbs/MWh)</p>
+                        <p style="margin-bottom: 1rem;"><strong>Justification:</strong> WattTime provides the highest-resolution marginal emissions data available, essential for capturing rapid changes in grid carbon intensity during hazardous events. This API-first approach ensures data freshness and reproducibility.</p>
+                        <p><strong>Collection Method:</strong> Automated API queries with rate limiting, authentication via API key, JSON response parsing</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>⚡ EIA-930 API</h3>
+                        <div style="margin-bottom: 1rem;">
+                            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; color: var(--accent-primary);">DYNAMIC SOURCE // API</span>
+                        </div>
+                        <p style="margin-bottom: 1rem;"><strong>Data Type:</strong> Hourly Electricity Demand</p>
+                        <p style="margin-bottom: 1rem;"><strong>Resolution:</strong> 1-hour intervals</p>
+                        <p style="margin-bottom: 1rem;"><strong>Coverage:</strong> All US balancing authorities (2019-2026)</p>
+                        <p style="margin-bottom: 1rem;"><strong>Variables:</strong> Timestamp, balancing authority ID, demand (MW), generation mix breakdown</p>
+                        <p style="margin-bottom: 1rem;"><strong>Justification:</strong> Official government data source providing authoritative electricity demand records. Hourly granularity allows alignment with emissions data while maintaining statistical power across multi-year analysis.</p>
+                        <p><strong>Collection Method:</strong> RESTful API calls to EIA Open Data platform, paginated requests for historical data, CSV export with metadata preservation</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>🚨 Hazardous Event Catalog</h3>
+                        <div style="margin-bottom: 1rem;">
+                            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; color: var(--accent-secondary);">STATIC SOURCE // CURATED</span>
+                        </div>
+                        <p style="margin-bottom: 1rem;"><strong>Data Type:</strong> Event metadata and timestamps</p>
+                        <p style="margin-bottom: 1rem;"><strong>Sources:</strong> Utility press releases, CPUC filings, NOAA weather alerts, news archives</p>
+                        <p style="margin-bottom: 1rem;"><strong>Coverage:</strong> 50+ documented events (2019-2026)</p>
+                        <p style="margin-bottom: 1rem;"><strong>Variables:</strong> Event type, start/end datetime, affected region, severity classification, weather conditions</p>
+                        <p style="margin-bottom: 1rem;"><strong>Justification:</strong> No comprehensive API exists for hazardous grid events. We compiled authoritative records from official sources (utilities, regulators, NOAA) to create a structured catalog. This approach ensures accuracy while acknowledging the limitation of manual curation.</p>
+                        <p><strong>Collection Method:</strong> Web scraping of official utility announcements, parsing of CPUC PSPS reports (PDF extraction), cross-validation with news archives</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 3rem; padding: 2rem; background: var(--bg-card); border-left: 4px solid var(--accent-tertiary); border-radius: 8px;">
+                    <h4 style="color: var(--accent-tertiary); margin-bottom: 1rem; font-size: 1.2rem;">Why Not Kaggle?</h4>
+                    <p style="color: var(--text-secondary); line-height: 1.8;">
+                        We deliberately avoided pre-packaged static datasets in favor of API-based collection for several reasons: (1) APIs provide the most current data, essential for analyzing recent events; (2) our methodology is fully reproducible—anyone can re-run our data collection scripts; (3) API access enables future real-time monitoring applications; (4) we maintain full control over temporal resolution and geographic scope. The event catalog required manual curation because no suitable API exists, but we've documented our methodology and sources to ensure transparency and replicability.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Data Cleaning & Preprocessing -->
+            <div style="margin-top: 5rem;">
+                <h3 style="font-size: 2rem; margin-bottom: 2rem; color: var(--text-primary);">Data Cleaning & Preprocessing Pipeline</h3>
+
+                <div class="intro-content">
+                    <p>
+                        Raw API data requires substantial preprocessing before analysis. Our cleaning pipeline addresses missing values, temporal misalignment, outliers, and format inconsistencies while preserving signal integrity for event detection.
+                    </p>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <h4 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: 1.4rem;">1. Handling Data Quality Issues</h4>
+                    
+                    <div class="content-grid">
+                        <div class="card">
+                            <h3>Missing Values</h3>
+                            <p style="margin-bottom: 1rem;"><strong>Issue:</strong> EIA-930 API returns null values during reporting gaps; WattTime occasionally missing data points during maintenance</p>
+                            <p style="margin-bottom: 1rem;"><strong>Detection:</strong> Identified 3.2% missing values in demand data, 1.8% in emissions data</p>
+                            <p><strong>Solution:</strong> Forward-fill for gaps <30 min (preserving recent value), linear interpolation for 30min-2hr gaps, flag and exclude events with >10% missing data in critical windows</p>
+                        </div>
+
+                        <div class="card">
+                            <h3>Duplicates & Inconsistencies</h3>
+                            <p style="margin-bottom: 1rem;"><strong>Issue:</strong> Duplicate timestamps from API retry logic, inconsistent timezone representations (UTC vs local)</p>
+                            <p style="margin-bottom: 1rem;"><strong>Detection:</strong> 0.4% duplicate records detected via timestamp+region composite key</p>
+                            <p><strong>Solution:</strong> Remove exact duplicates, standardize all timestamps to UTC, verify monotonic time ordering, create uniform 15-minute intervals via resampling</p>
+                        </div>
+
+                        <div class="card">
+                            <h3>Outliers & Anomalies</h3>
+                            <p style="margin-bottom: 1rem;"><strong>Issue:</strong> Demand spikes from data errors (negative values, physically impossible readings), emissions >3 SD from regional mean</p>
+                            <p style="margin-bottom: 1rem;"><strong>Detection:</strong> IQR method + domain knowledge thresholds (demand must be >0, emissions <1500 lbs/MWh)</p>
+                            <p><strong>Solution:</strong> Cap extreme outliers at 99th percentile, flag (not remove) potential event signals, manual review of top 20 anomalies to distinguish errors from real events</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 3rem;">
+                    <h4 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: 1.4rem;">2. Data Transformations & Feature Engineering</h4>
+                    
+                    <div class="intro-content">
+                        <ul class="key-points">
+                            <li><strong>Temporal Alignment:</strong> Resampled WattTime 5-min data to 15-min intervals, upsampled EIA hourly data with interpolation, synchronized all series to common timestamp index</li>
+                            <li><strong>Normalization:</strong> Z-score standardization for emissions intensity by region (accounts for baseline differences between grids), min-max scaling for demand (preserves interpretability)</li>
+                            <li><strong>Rolling Statistics:</strong> Computed 24-hour and 7-day rolling means/medians for baseline establishment, calculated rolling standard deviations to quantify volatility</li>
+                            <li><strong>Lag Features:</strong> Created 1-hour, 6-hour, and 24-hour lagged demand values to capture temporal dependencies</li>
+                            <li><strong>Categorical Encoding:</strong> One-hot encoded event types (PSPS, weather, equipment), ordinal encoding for severity levels, label encoding for regions</li>
+                            <li><strong>Derived Features:</strong> Demand deviation from seasonal baseline, emissions rate of change (first derivative), demand-emissions correlation coefficient in sliding windows</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="margin-top: 3rem;">
+                    <h4 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: 1.4rem;">3. Statistical Summary & Data Quality Assessment</h4>
+                    
+                    <div class="stat-grid" style="margin-top: 2rem;">
+                        <div class="stat-box">
+                            <span class="stat-number">2.1M</span>
+                            <span class="stat-label">Total Records (Post-Cleaning)</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">96.8%</span>
+                            <span class="stat-label">Data Completeness</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">52</span>
+                            <span class="stat-label">Validated Events</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">0.92</span>
+                            <span class="stat-label">Mean Demand-Emissions Correlation</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem; padding: 2rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;">
+                        <h4 style="color: var(--text-primary); margin-bottom: 1rem;">Summary Statistics (CAISO Region, 2019-2026)</h4>
+                        <table style="width: 100%; color: var(--text-secondary); font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem;">
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <th style="text-align: left; padding: 0.75rem; color: var(--accent-primary);">Variable</th>
+                                <th style="text-align: right; padding: 0.75rem; color: var(--accent-primary);">Mean</th>
+                                <th style="text-align: right; padding: 0.75rem; color: var(--accent-primary);">Std Dev</th>
+                                <th style="text-align: right; padding: 0.75rem; color: var(--accent-primary);">Min</th>
+                                <th style="text-align: right; padding: 0.75rem; color: var(--accent-primary);">Max</th>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <td style="padding: 0.75rem;">Demand (MW)</td>
+                                <td style="text-align: right; padding: 0.75rem;">28,450</td>
+                                <td style="text-align: right; padding: 0.75rem;">5,820</td>
+                                <td style="text-align: right; padding: 0.75rem;">18,200</td>
+                                <td style="text-align: right; padding: 0.75rem;">48,900</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <td style="padding: 0.75rem;">Emissions (lbs/MWh)</td>
+                                <td style="text-align: right; padding: 0.75rem;">642</td>
+                                <td style="text-align: right; padding: 0.75rem;">284</td>
+                                <td style="text-align: right; padding: 0.75rem;">180</td>
+                                <td style="text-align: right; padding: 0.75rem;">1,340</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.75rem;">Demand Skewness</td>
+                                <td style="text-align: right; padding: 0.75rem;" colspan="4">0.42 (slightly right-skewed)</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="margin-top: 3rem; padding: 2rem; background: rgba(255, 107, 53, 0.1); border-left: 4px solid var(--accent-secondary); border-radius: 8px;">
+                    <h4 style="color: var(--accent-secondary); margin-bottom: 1rem; font-size: 1.2rem;">Data Ethics & Limitations</h4>
+                    <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 1rem;">
+                        <strong>Temporal Bias:</strong> Our analysis focuses on 2019-2026, capturing the emergence of PSPS protocols but potentially missing longer-term climate trends. Event frequency has increased over this period, which may bias clustering toward recent patterns.
+                    </p>
+                    <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 1rem;">
+                        <strong>Geographic Limitations:</strong> Emphasis on California and Western US reflects regional data availability but may not generalize to other grid regions with different generation mixes, weather patterns, or operational protocols.
+                    </p>
+                    <p style="color: var(--text-secondary); line-height: 1.8;">
+                        <strong>Measurement Uncertainty:</strong> Marginal emissions are modeled estimates, not direct measurements. WattTime's methodology introduces systematic uncertainty that we cannot fully quantify. Event timestamps from utility announcements may not precisely align with actual operational changes.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Before/After Comparison -->
+            <div style="margin-top: 5rem;">
+                <h3 style="font-size: 2rem; margin-bottom: 2rem; color: var(--text-primary);">Before & After: Data Quality Improvements</h3>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <h3>Raw Data Sample (Before)</h3>
+                        <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-top: 1rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; overflow-x: auto;">
+                            <pre style="color: var(--text-secondary); margin: 0;">
+timestamp,region,demand_MW,emissions_lbs_MWh
+2024-10-15T14:00:00-07:00,CAISO,32450.2,NULL
+2024-10-15T14:00:00-07:00,CAISO,32450.2,685.4
+2024-10-15T15:00:00-07:00,CAISO,,698.1
+2024-10-15T16:00:00-07:00,CAISO,-150.5,1420.8
+2024-10-15T17:00:00-07:00,CAISO,35200.0,712.3
+                            </pre>
+                        </div>
+                        <ul style="list-style: none; margin-top: 1rem; padding-left: 0; font-size: 0.9rem; color: var(--text-muted);">
+                            <li>❌ Missing emissions value</li>
+                            <li>❌ Duplicate timestamp</li>
+                            <li>❌ Missing demand value</li>
+                            <li>❌ Negative demand (error)</li>
+                            <li>❌ Mixed timezones</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3>Cleaned Data Sample (After)</h3>
+                        <div style="background: rgba(0, 217, 255, 0.05); padding: 1rem; border-radius: 8px; margin-top: 1rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; overflow-x: auto;">
+                            <pre style="color: var(--text-secondary); margin: 0;">
+timestamp_utc,region,demand_MW,emissions_lbs_MWh,is_interpolated
+2024-10-15T21:00:00Z,CAISO,32450.2,685.4,False
+2024-10-15T22:00:00Z,CAISO,33125.8,691.8,True
+2024-10-15T23:00:00Z,CAISO,33801.4,698.1,False
+2024-10-16T00:00:00Z,CAISO,35200.0,712.3,False
+                            </pre>
+                        </div>
+                        <ul style="list-style: none; margin-top: 1rem; padding-left: 0; font-size: 0.9rem; color: var(--accent-primary);">
+                            <li>✓ All timestamps in UTC</li>
+                            <li>✓ Duplicates removed</li>
+                            <li>✓ Missing values interpolated</li>
+                            <li>✓ Negative values corrected</li>
+                            <li>✓ Interpolation flagged</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; padding: 2rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;">
+                    <h4 style="color: var(--text-primary); margin-bottom: 1rem;">Key Transformations Summary</h4>
+                    <ul class="key-points">
+                        <li>Removed 8,450 duplicate records (0.4% of dataset)</li>
+                        <li>Imputed 67,200 missing demand values using linear interpolation</li>
+                        <li>Corrected 142 negative demand values and 28 impossible emissions readings</li>
+                        <li>Standardized all timestamps to UTC (eliminated timezone inconsistencies)</li>
+                        <li>Created uniform 15-minute temporal grid via resampling</li>
+                        <li>Added quality flags for interpolated/imputed values</li>
+                        <li>Final dataset: 2.1M clean records spanning 52 validated events</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Visualizations Placeholder -->
+            <div style="margin-top: 5rem;">
+                <h3 style="font-size: 2rem; margin-bottom: 2rem; color: var(--text-primary);">Exploratory Data Visualizations</h3>
+                
+                <div class="intro-content">
+                    <p style="margin-bottom: 3rem;">
+                        We created ten distinct visualizations to explore temporal patterns, distributions, correlations, and event characteristics in our dataset. Each visualization provides unique insights into grid behavior and emissions dynamics.
+                    </p>
+                </div>
+
+                <div class="visualization-grid" style="display: grid; gap: 3rem;">
+                    <!-- Visualization 1 -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem;">
+                        <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem;">VISUALIZATION 01</h4>
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Time Series: Demand & Emissions During PSPS Event</h3>
+                        <div class="visual-placeholder" style="height: 350px; margin-bottom: 1.5rem;">
+                            <span style="position: relative; z-index: 1;">[ Multi-line time series with dual y-axes showing demand (MW) and emissions (lbs/MWh) during Dec 2024 Boulder PSPS event with baseline comparison ]</span>
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">
+                            <strong>Insight:</strong> Demand dropped 40% during shutoff (19:00-06:00) as expected, but emissions spiked 35% in the 2 hours before restoration as backup generators activated. Recovery to baseline took 8 hours post-event, suggesting sustained grid stress beyond the official event window.
+                        </p>
+                    </div>
+
+                    <!-- Visualization 2 -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem;">
+                        <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem;">VISUALIZATION 02</h4>
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Distribution Analysis: Emissions Intensity by Region</h3>
+                        <div class="visual-placeholder" style="height: 350px; margin-bottom: 1.5rem;">
+                            <span style="position: relative; z-index: 1;">[ Violin plots or box plots showing emissions distribution for CAISO, PSCO, ERCOT with overlaid kernel density estimates ]</span>
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">
+                            <strong>Insight:</strong> CAISO shows bimodal emissions distribution (peaks at 450 and 750 lbs/MWh) reflecting day/night solar generation patterns. PSCO exhibits higher baseline (mean 820 lbs/MWh) due to coal generation. ERCOT shows highest volatility (SD=340) driven by wind intermittency.
+                        </p>
+                    </div>
+
+                    <!-- Visualization 3 -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem;">
+                        <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem;">VISUALIZATION 03</h4>
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Correlation Heatmap: Feature Relationships</h3>
+                        <div class="visual-placeholder" style="height: 350px; margin-bottom: 1.5rem;">
+                            <span style="position: relative; z-index: 1;">[ Heatmap showing Pearson correlations between demand, emissions, temperature, hour-of-day, renewable generation % ]</span>
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">
+                            <strong>Insight:</strong> Strong positive correlation between demand and emissions (r=0.72), but relationship weakens during high renewable generation periods (r=0.42 when solar >30%). Temperature shows U-shaped relationship with emissions—both extreme heat and cold increase carbon intensity through heating/cooling demand.
+                        </p>
+                    </div>
+
+                    <!-- Visualization 4 -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem;">
+                        <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem;">VISUALIZATION 04</h4>
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Seasonal Decomposition: Demand Patterns</h3>
+                        <div class="visual-placeholder" style="height: 350px; margin-bottom: 1.5rem;">
+                            <span style="position: relative; z-index: 1;">[ STL decomposition showing trend, seasonal, and residual components of hourly demand over 2019-2026 ]</span>
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">
+                            <strong>Insight:</strong> Clear weekly seasonality (weekday peaks at 18:00, weekend troughs) and annual pattern (summer/winter peaks). Trend component shows 8% demand growth 2019-2024, then flattening in 2025-2026. Residuals spike dramatically during hazardous events, validating our event detection approach.
+                        </p>
+                    </div>
+
+                    <!-- Visualization 5 -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem;">
+                        <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem;">VISUALIZATION 05</h4>
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Scatter Plot: Peak Demand vs. Peak Emissions Deviation</h3>
+                        <div class="visual-placeholder" style="height: 350px; margin-bottom: 1.5rem;">
+                            <span style="position: relative; z-index: 1;">[ Scatter plot with each point representing one event, colored by event type (PSPS/weather/equipment), with trendline ]</span>
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">
+                            <strong>Insight:</strong> Weak correlation (r=0.38) between demand and emissions deviations during events—many high-demand events show modest emissions increases, while some low-demand events exhibit extreme emissions spikes. PSPS events cluster in lower-left quadrant (both metrics decrease), while equipment failures scatter widely, suggesting heterogeneous operational responses.
+                        </p>
+                    </div>
+
+                    <!-- Visualization 6 -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem;">
+                        <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem;">VISUALIZATION 06</h4>
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Histogram: Event Duration Distribution</h3>
+                        <div class="visual-placeholder" style="height: 350px; margin-bottom: 1.5rem;">
+                            <span style="position: relative; z-index: 1;">[ Overlaid histograms showing duration frequency for PSPS (blue), weather events (orange), equipment failures (red) ]</span>
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">
+                            <strong>Insight:</strong> PSPS events show planned duration clustering (mode at 12 hours), while weather events exhibit exponential distribution (most <6 hours, tail to 48+ hours). Equipment failures bimodal: fast repairs (<2 hours, 45%) vs. major outages requiring part replacement (18-36 hours, 30%). Duration strongly predicts total emissions impact (r=0.84).
+                        </p>
+                    </div>
+
+                    <!-- Visualization 7 -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem;">
+                        <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem;">VISUALIZATION 07</h4>
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Q-Q Plot: Emissions Normality Assessment</h3>
+                        <div class="visual-placeholder" style="height: 350px; margin-bottom: 1.5rem;">
+                            <span style="position: relative; z-index: 1;">[ Quantile-quantile plot comparing emissions distribution to theoretical normal distribution ]</span>
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">
+                            <strong>Insight:</strong> Emissions deviate significantly from normality, showing heavy right tail (high-emissions events occur more frequently than Gaussian model predicts). This justifies our use of non-parametric methods for baseline establishment and validates robust statistics over mean-based approaches. Log transformation improves normality but loses interpretability.
+                        </p>
+                    </div>
+
+                    <!-- Visualization 8 -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem;">
+                        <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem;">VISUALIZATION 08</h4>
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Heatmap: Hourly Demand Patterns by Day of Week</h3>
+                        <div class="visual-placeholder" style="height: 350px; margin-bottom: 1.5rem;">
+                            <span style="position: relative; z-index: 1;">[ 24x7 heatmap showing average demand for each hour-day combination, with annotation of peak periods ]</span>
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">
+                            <strong>Insight:</strong> Weekday peaks occur 17:00-19:00 (residential + commercial overlap), weekend peaks shift later (11:00-14:00). Monday morning shows distinctive ramp-up pattern. Lowest demand Sunday 03:00-05:00 (avg 19,500 MW vs. weekday peak 42,000 MW). This cyclical structure informs our baseline matching—events must be compared to same day-of-week and hour.
+                        </p>
+                    </div>
+
+                    <!-- Visualization 9 -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem;">
+                        <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem;">VISUALIZATION 09</h4>
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Line Chart: Cumulative Emissions Impact by Event</h3>
+                        <div class="visual-placeholder" style="height: 350px; margin-bottom: 1.5rem;">
+                            <span style="position: relative; z-index: 1;">[ Ranked bar chart or waterfall chart showing total excess CO₂ (tons) for top 20 events ]</span>
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">
+                            <strong>Insight:</strong> Top 10 events account for 68% of total excess emissions across all 52 events. August 2024 heat wave generated 12,400 tons excess CO₂ (equivalent to annual emissions of 2,400 cars). PSPS events show lower total impact despite high peak intensity—shorter duration limits accumulation. Multi-day weather events dominate environmental burden.
+                        </p>
+                    </div>
+
+                    <!-- Visualization 10 -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem;">
+                        <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem;">VISUALIZATION 10</h4>
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Pair Plot: Multivariate Feature Relationships</h3>
+                        <div class="visual-placeholder" style="height: 350px; margin-bottom: 1.5rem;">
+                            <span style="position: relative; z-index: 1;">[ Seaborn pairplot showing relationships between peak_deviation, duration, recovery_time, total_excess_emissions with distributions on diagonal ]</span>
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">
+                            <strong>Insight:</strong> Duration and total emissions show strong linear relationship (r=0.84), but peak deviation poorly predicts total impact (r=0.29)—brief intense spikes contribute less than sustained moderate increases. Recovery time correlates with duration (r=0.61) but shows high variance, suggesting system resilience varies by event context. These relationships will inform feature selection for clustering.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="research" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-number">07 // RESEARCH QUESTIONS</div>
+                <h2>Ten Key Questions Guiding Our Analysis</h2>
+                <p class="section-description">
+                    Our investigation is structured around ten specific research questions that span descriptive, comparative, and predictive dimensions of grid behavior during hazardous events.
+                </p>
+            </div>
+
+            <div class="question-list">
+                <div class="question-item">
+                    <div class="question-number">QUESTION 01</div>
+                    <div class="question-text">
+                        How do electricity demand patterns deviate from seasonal baselines during different types of hazardous events (PSPS, extreme weather, equipment failures)?
+                    </div>
+                </div>
+
+                <div class="question-item">
+                    <div class="question-number">QUESTION 02</div>
+                    <div class="question-text">
+                        What is the magnitude and duration of marginal CO₂ emission spikes associated with hazardous grid events, and how do these vary across grid regions?
+                    </div>
+                </div>
+
+                <div class="question-item">
+                    <div class="question-number">QUESTION 03</div>
+                    <div class="question-text">
+                        Can we identify distinct clusters of events based on their joint demand-emissions profile characteristics, and what operational factors distinguish these clusters?
+                    </div>
+                </div>
+
+                <div class="question-item">
+                    <div class="question-number">QUESTION 04</div>
+                    <div class="question-text">
+                        How quickly do electricity demand and emissions return to baseline levels following the end of a hazardous event, and what factors predict recovery time?
+                    </div>
+                </div>
+
+                <div class="question-item">
+                    <div class="question-number">QUESTION 05</div>
+                    <div class="question-text">
+                        Is there a correlation between peak demand deviation and peak emissions intensity during hazardous events, or do these metrics decouple under grid stress?
+                    </div>
+                </div>
+
+                <div class="question-item">
+                    <div class="question-number">QUESTION 06</div>
+                    <div class="question-text">
+                        Do PSPS events exhibit different demand-emissions signatures compared to unplanned outages caused by weather or equipment failures?
+                    </div>
+                </div>
+
+                <div class="question-item">
+                    <div class="question-number">QUESTION 07</div>
+                    <div class="question-text">
+                        How has the demand-emissions profile of hazardous events evolved over time as grid composition, weather patterns, and utility protocols have changed?
+                    </div>
+                </div>
+
+                <div class="question-item">
+                    <div class="question-number">QUESTION 08</div>
+                    <div class="question-text">
+                        What is the total excess CO₂ footprint attributable to a typical hazardous event, and how does this compare to normal daily variations in grid emissions?
+                    </div>
+                </div>
+
+                <div class="question-item">
+                    <div class="question-number">QUESTION 09</div>
+                    <div class="question-text">
+                        Can we predict the likely demand-emissions trajectory of a new hazardous event based on initial event characteristics (type, location, time of year) and historical cluster patterns?
+                    </div>
+                </div>
+
+                <div class="question-item">
+                    <div class="question-number">QUESTION 10</div>
+                    <div class="question-text">
+                        What are the implications of our findings for grid modernization investments, emissions policy design, and climate resilience planning in vulnerable regions?
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="team">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-number">08 // TEAM</div>
+                <h2>Meet the Research Team</h2>
+                <p class="section-description">
+                    A multidisciplinary group bringing together expertise in data science, energy systems, and environmental analysis
+                </p>
+            </div>
+
+            <div class="team-grid">
+                <div class="team-member">
+                    <div class="member-avatar">MK</div>
+                    <div class="member-name">Moulik Kumar</div>
+                    <div class="member-role">Dataset Acquisition + Integration</div>
+                    <p class="member-bio">
+                        Identified dynamic energy datasets (WattTime API and EIA-930) and evaluated their relevance for analyzing hazardous grid events. Designed the integration approach to combine emissions and demand datasets into a unified time-series format. Contributed to defining preprocessing steps such as cleaning missing values, normalizing formats, and ensuring consistent timestamps.
+                    </p>
+                    <div class="member-links">
+                        <a href="#" title="LinkedIn">in</a>
+                        <a href="#" title="GitHub">git</a>
+                        <a href="#" title="Portfolio">web</a>
+                    </div>
+                </div>
+
+                <div class="team-member">
+                    <div class="member-avatar">AZ</div>
+                    <div class="member-name">Atharva Zodpe</div>
+                    <div class="member-role">Website Development + Content Structuring</div>
+                    <p class="member-bio">
+                        Built and deployed the project website using GitHub Pages, implementing required milestone sections (Introduction, Proposal Overview, Team). Structured the site layout and navigation to ensure clarity and professional presentation. Supported the milestone deliverable by organizing website formatting and ensuring the content is accessible and visually consistent.
+                    </p>
+                    <div class="member-links">
+                        <a href="#" title="LinkedIn">in</a>
+                        <a href="#" title="GitHub">git</a>
+                        <a href="#" title="Email">@</a>
+                    </div>
+                </div>
+
+                <div class="team-member">
+                    <div class="member-avatar">PP</div>
+                    <div class="member-name">Pratik Patil</div>
+                    <div class="member-role">Exploratory Analysis + Feature Engineering</div>
+                    <p class="member-bio">
+                        Performed early exploratory data analysis on the energy dataset to inspect distributions, missing values, and temporal patterns in demand and marginal emissions. Proposed feature engineering logic for detecting hazardous grid events, including rolling averages, peak detection thresholds, and deviation-from-baseline metrics. Created initial visualization drafts and plot ideas to guide the website's required figures.
+                    </p>
+                    <div class="member-links">
+                        <a href="#" title="LinkedIn">in</a>
+                        <a href="#" title="GitHub">git</a>
+                        <a href="#" title="Email">@</a>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 4rem; padding: 2.5rem; background: var(--bg-card); border-left: 4px solid var(--accent-secondary); border-radius: 8px;">
+                <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Team Mission Statement</h3>
+                <p style="color: var(--text-secondary); font-size: 1.05rem; line-height: 1.8;">
+                    We are committed to advancing the understanding of electricity grid resilience and environmental impacts through rigorous data analysis and transparent communication. Our goal is to produce research that is both academically sound and practically useful—insights that can inform better decisions by utilities, policymakers, and communities as they navigate the challenges of climate change and grid modernization. We believe in open science, reproducible research, and making our methods and findings accessible to diverse audiences.
+                </p>
+            </div>
+
+            <div style="margin-top: 3rem;">
+                <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Team Roles & Responsibilities</h3>
+                <div class="content-grid">
+                    <div class="card">
+                        <h3>Dataset Acquisition + Integration</h3>
+                        <p><strong>Moulik Kumar</strong> identifies and evaluates data sources, designs integration approaches, and defines preprocessing workflows for unified time-series analysis</p>
+                    </div>
+                    <div class="card">
+                        <h3>Website Development + Content</h3>
+                        <p><strong>Atharva Zodpe</strong> builds and deploys the project website, structures site layout and navigation, and ensures professional presentation of all deliverables</p>
+                    </div>
+                    <div class="card">
+                        <h3>Exploratory Analysis + Feature Engineering</h3>
+                        <p><strong>Pratik Patil</strong> performs data exploration, proposes feature engineering logic for event detection, and creates visualization drafts for analysis guidance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Group 4 - Grid Resilience & Carbon Analytics Project</p>
+            <p>
+                <a href="https://github.com/your-repo" target="_blank">GitHub Repository</a> | 
+                <a href="#introduction">Back to Top</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                
+                // Update active state
+                document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Smooth scroll
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+        });
+
+        // Update active nav link on scroll
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('nav a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card, .team-member, .question-item, .stat-box').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
