@@ -941,6 +941,236 @@
                 </div>
             </div>
 
+            <!-- Dataset Data Types Table -->
+            <div style="margin-top: 5rem;">
+                <h3 style="font-size: 2rem; margin-bottom: 2rem; color: var(--text-primary);">Dataset Schema & Data Types</h3>
+
+                <div class="intro-content">
+                    <p>
+                        The three datasets used in this project span numeric, categorical, datetime, and text types. Understanding these schemas is essential for selecting appropriate preprocessing steps and analytical methods.
+                    </p>
+                </div>
+
+                <!-- Emissions Dataset -->
+                <div style="margin-top: 2rem;">
+                    <h4 style="color: var(--accent-primary); margin-bottom: 1rem; font-size: 1.15rem; font-family: 'IBM Plex Mono', monospace;">📊 WattTime Emissions Dataset</h4>
+                    <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--border);">
+                        <table style="width: 100%; border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem;">
+                            <thead>
+                                <tr style="background: rgba(0, 217, 255, 0.08);">
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Column</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Data Type</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Unit / Format</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Description</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Example</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">point_time</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">datetime (UTC)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">ISO 8601</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Timestamp of the MOER reading</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">2024-08-08T00:05:00+00:00</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">value</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">float (continuous)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">lbs CO₂ / MWh</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Marginal Operating Emissions Rate (MOER)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">992.0</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">region</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">string (categorical)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">Grid region ID</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">WattTime region identifier</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">CAISO_NORTH</td>
+                                </tr>
+                                <tr style="background: rgba(255,255,255,0.02);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">event_id</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">string (categorical)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">Slug</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Link to hazardous event catalog entry</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">weather_ca_202408</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Demand Dataset -->
+                <div style="margin-top: 2.5rem;">
+                    <h4 style="color: var(--accent-primary); margin-bottom: 1rem; font-size: 1.15rem; font-family: 'IBM Plex Mono', monospace;">⚡ EIA-930 Demand Dataset</h4>
+                    <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--border);">
+                        <table style="width: 100%; border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem;">
+                            <thead>
+                                <tr style="background: rgba(0, 217, 255, 0.08);">
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Column</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Data Type</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Unit / Format</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Description</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Example</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">timestamp</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">datetime (UTC)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">ISO 8601</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Start of the hourly reporting interval</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">2024-08-08 01:00:00</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">balancing_authority</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">string (categorical)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">EIA BA code</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">NERC balancing authority identifier</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">CISO</td>
+                                </tr>
+                                <tr style="background: rgba(255,255,255,0.02);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">demand_MW</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">integer / float (continuous)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">MWh</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Total hourly electricity consumption</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">39,268</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Events Catalog -->
+                <div style="margin-top: 2.5rem;">
+                    <h4 style="color: var(--accent-primary); margin-bottom: 1rem; font-size: 1.15rem; font-family: 'IBM Plex Mono', monospace;">🚨 Hazardous Event Catalog</h4>
+                    <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--border);">
+                        <table style="width: 100%; border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem;">
+                            <thead>
+                                <tr style="background: rgba(0, 217, 255, 0.08);">
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Column</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Data Type</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Unit / Format</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Description</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Example</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">event_id</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">string (primary key)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">Slug</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Unique identifier for each event</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">weather_ca_202408</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">event_type</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">string (categorical)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">Enum</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Type of hazardous event (PSPS, extreme_weather, …)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">extreme_weather</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">start / end</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">datetime</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">YYYY-MM-DD HH:MM:SS</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Event window boundaries</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">2024-08-15 00:00:00</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">region</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">string (categorical)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">Grid region ID</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Affected grid/balancing authority</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">CAISO</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">severity</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">string (ordinal)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">low / moderate / high</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Rated severity of the event</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">high</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">affected_customers</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">integer (discrete)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">Count</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Number of customers impacted</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">125,000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">description</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">string (free text)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">Natural language</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Human-readable event summary</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">Heat wave causing grid stress…</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Engineered Features -->
+                <div style="margin-top: 2.5rem;">
+                    <h4 style="color: var(--accent-primary); margin-bottom: 1rem; font-size: 1.15rem; font-family: 'IBM Plex Mono', monospace;">⚙️ Engineered Features (Post-Preprocessing)</h4>
+                    <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--border);">
+                        <table style="width: 100%; border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem;">
+                            <thead>
+                                <tr style="background: rgba(0, 217, 255, 0.08);">
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Feature</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Data Type</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Range</th>
+                                    <th style="text-align: left; padding: 0.85rem 1rem; color: var(--accent-primary); border-bottom: 1px solid var(--border);">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">hour</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">integer (discrete)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">0 – 23</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Hour of day extracted from timestamp (UTC)</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">day_of_week</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">integer (ordinal)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">0 (Mon) – 6 (Sun)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Day of week (Monday = 0)</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">is_weekend</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">integer (binary)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">0 / 1</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">1 if Saturday or Sunday, else 0</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">season</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">string (categorical)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">winter/spring/summer/fall</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">Calendar season derived from month</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">value_rolling_mean_24h</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">float (continuous)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">lbs CO₂ / MWh</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">24-hour centered rolling mean of MOER</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">value_rolling_std_24h</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">float (continuous)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">lbs CO₂ / MWh</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">24-hour rolling standard deviation of MOER (volatility proxy)</td>
+                                </tr>
+                                <tr style="background: rgba(255,255,255,0.02);">
+                                    <td style="padding: 0.75rem 1rem; color: var(--accent-tertiary);">value_lag_4 / _24 / _96</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">float (continuous)</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">lbs CO₂ / MWh</td>
+                                    <td style="padding: 0.75rem 1rem; color: var(--text-secondary);">MOER lagged by 1 hr, 6 hr, and 24 hr respectively</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Data Cleaning & Preprocessing -->
             <div style="margin-top: 5rem;">
                 <h3 style="font-size: 2rem; margin-bottom: 2rem; color: var(--text-primary);">Data Cleaning & Preprocessing Pipeline</h3>
