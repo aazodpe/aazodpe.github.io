@@ -2,57 +2,47 @@
 
 **Characterizing Electricity Demand and Marginal CO₂ Emissions During Hazardous Grid Events**
 
-[![Project Website](https://img.shields.io/badge/Website-Live-brightgreen)](https://your-website-url.github.io)
+[![Project Website](https://img.shields.io/badge/Website-Live-brightgreen)](https://aazodpe.github.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 📊 Project Overview
+## Project Overview
 
 This project investigates how hazardous events (Public Safety Power Shutoffs, extreme weather, equipment failures) affect electricity demand patterns and marginal CO₂ emissions using high-resolution time-series data. We apply data mining and clustering techniques to identify distinct operational signatures that can inform grid management and decarbonization strategies.
 
 **Research Question:** Can hazardous events be characterized by distinct electricity demand and marginal CO₂ emission profiles using time-resolved grid data?
 
-## 👥 Team Members
+## Team Members
 
 - **Moulik Kumar** - Dataset Acquisition + Integration
 - **Atharva Zodpe** - Website Development + Content Structuring
 - **Pratik Patil** - Exploratory Analysis + Feature Engineering
 
-## 🗂️ Repository Structure
+## Repository Structure
 
 ```
-grid-analytics/
+Data Mining Project/
 │
 ├── data/
-│   ├── raw/                    # Raw data from APIs
-│   ├── processed/              # Cleaned and preprocessed data
-│   └── events/                 # Hazardous event catalog
+│   ├── raw/
+│   │   ├── emissions_raw.csv       # Raw MOER readings from WattTime API
+│   │   ├── demand_raw.csv          # Raw hourly demand from EIA-930 API
+│   │   └── events_catalog.csv      # Curated hazardous event records
+│   └── processed/
+│       ├── emissions_clean.csv     # Cleaned emissions data
+│       ├── demand_clean.csv        # Cleaned demand data
+│       └── data_quality_report.json
 │
-├── src/
-│   ├── data_collection.py      # API data collection scripts
-│   ├── data_cleaning.py        # Cleaning and preprocessing
-│   ├── feature_engineering.py  # Feature extraction
-│   ├── visualization.py        # Exploratory visualizations
-│   └── utils/                  # Helper functions
+├── figures/                        # Generated visualization PNGs (viz01–viz10)
 │
-├── notebooks/
-│   ├── 01_data_exploration.ipynb
-│   ├── 02_feature_analysis.ipynb
-│   └── 03_event_clustering.ipynb
-│
-├── reports/
-│   ├── milestone_1.pdf
-│   ├── milestone_2.pdf
-│   └── figures/                # Generated visualizations
-│
-├── website/                    # Website source files
-│   └── index.html
-│
-├── requirements.txt            # Python dependencies
-├── README.md                   # This file
-└── LICENSE
+├── data_collection.py              # API data collection script
+├── data_cleaning.py                # Cleaning and preprocessing pipeline
+├── visualization.py                # Exploratory visualizations (10 charts)
+├── index.html                      # Project website
+├── requirements.txt                # Python dependencies
+└── README.md
 ```
 
-## 🔧 Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 
@@ -65,8 +55,8 @@ grid-analytics/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/grid-analytics.git
-cd grid-analytics
+git clone https://github.com/aazodpe/aazodpe.github.io.git
+cd aazodpe.github.io
 ```
 
 2. Create a virtual environment:
@@ -80,13 +70,14 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Configure API credentials:
-```bash
-cp config.example.py config.py
-# Edit config.py with your API keys
+4. Add API credentials to a `.env` file:
+```
+WATTTIME_USER=your_username
+WATTTIME_PASSWORD=your_password
+EIA_API_KEY=your_key
 ```
 
-## 📚 Data Sources
+## Data Sources
 
 ### 1. WattTime API - Marginal Emissions
 - **Type:** Dynamic API
@@ -105,34 +96,34 @@ cp config.example.py config.py
 - **Sources:** Utility reports, CPUC filings, NOAA alerts
 - **Variables:** Event type, start/end times, affected region, severity
 
-## 🚀 Usage
+## Usage
 
 ### Data Collection
 
 ```bash
-python src/data_collection.py --region CAISO --start-date 2024-01-01 --end-date 2024-12-31
+python data_collection.py
 ```
 
 ### Data Cleaning
 
 ```bash
-python src/data_cleaning.py --input data/raw/ --output data/processed/
+python data_cleaning.py
 ```
 
 ### Generate Visualizations
 
 ```bash
-python src/visualization.py --data data/processed/emissions_clean.csv
+python visualization.py
 ```
 
-## 📈 Key Findings (Milestone 2)
+## Key Findings (Milestone 2)
 
 - **Data Quality:** 96.8% completeness after cleaning 2.1M records
 - **Event Coverage:** 52 validated hazardous events (2019-2026)
 - **Demand-Emissions Correlation:** Strong baseline correlation (r=0.92) that weakens during events
 - **Regional Differences:** CAISO shows bimodal emissions distribution; PSCO higher baseline; ERCOT highest volatility
 
-## 📊 Visualizations
+## Visualizations
 
 Our exploratory analysis includes 10 unique visualizations:
 
@@ -147,7 +138,7 @@ Our exploratory analysis includes 10 unique visualizations:
 9. Cumulative emissions impact ranking
 10. Multivariate feature relationship analysis
 
-## 🛠️ Preprocessing Pipeline
+## Preprocessing Pipeline
 
 Our data cleaning pipeline addresses:
 
@@ -163,29 +154,29 @@ Our data cleaning pipeline addresses:
   
 - **Temporal Standardization:** All timestamps converted to UTC with uniform 15-minute intervals
 
-## 📝 Milestones
+## Milestones
 
 - ✅ **Milestone 1:** Project framing, research questions, website launch
 - ✅ **Milestone 2:** Data collection, cleaning, exploratory analysis
 - ⏳ **Milestone 3:** Feature engineering, clustering analysis
 - ⏳ **Milestone 4:** Final analysis, comprehensive reporting
 
-## 🤝 Contributing
+## Contributing
 
 This is an academic project. For questions or suggestions, please contact the team members directly.
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - WattTime for providing marginal emissions data
 - U.S. Energy Information Administration for electricity demand data
 - California Public Utilities Commission for PSPS event documentation
 - Course instructors and TAs for guidance
 
-## 📞 Contact
+## Contact
 
 **Project Website:** [https://your-website-url.github.io](https://your-website-url.github.io)
 
