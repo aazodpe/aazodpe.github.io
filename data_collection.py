@@ -6,6 +6,7 @@ This script collects data from WattTime API and EIA-930 API for analyzing
 hazardous grid events and their impact on electricity demand and emissions.
 """
 
+import os
 import requests
 import pandas as pd
 import numpy as np
@@ -14,6 +15,9 @@ import time
 import json
 from typing import Dict, List, Optional
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -37,7 +41,8 @@ class WattTimeCollector:
         
     def authenticate(self):
         """Authenticate and get access token"""
-        login_url = f"{self.base_url}/login"
+        # v3/login returns HTML; use v2/login which returns the JWT token
+        login_url = "https://api.watttime.org/v2/login"
         response = requests.get(login_url, auth=(self.username, self.password))
         
         if response.status_code == 200:
@@ -69,10 +74,16 @@ class WattTimeCollector:
             self.authenticate()
         
         headers = {'Authorization': f'Bearer {self.token}'}
+        def to_utc_str(dt):
+            if dt.tzinfo is None:
+                return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+            return dt.isoformat()
+
         params = {
             'region': region,
-            'start': start_time.isoformat(),
-            'end': end_time.isoformat()
+            'start': to_utc_str(start_time),
+            'end': to_utc_str(end_time),
+            'signal_type': 'co2_moer'
         }
         
         historical_url = f"{self.base_url}/historical"
@@ -151,25 +162,24 @@ class EIACollector:
         Returns:
             DataFrame with timestamp and demand data
         """
-        params = {
-            'api_key': self.api_key,
-            'frequency': 'hourly',
-            'data': ['value'],
-            'facets[respondent][]': balancing_authority,
-            'facets[type][]': 'D',  # Demand
-            'start': start_date,
-            'end': end_date,
-            'sort[0][column]': 'period',
-            'sort[0][direction]': 'asc',
-            'offset': 0,
-            'length': 5000
-        }
-        
         all_data = []
         offset = 0
-        
+
         while True:
-            params['offset'] = offset
+            # EIA v2 requires data[] list syntax passed as tuples to preserve key
+            params = [
+                ('api_key', self.api_key),
+                ('frequency', 'hourly'),
+                ('data[]', 'value'),
+                ('facets[respondent][]', balancing_authority),
+                ('facets[type][]', 'D'),
+                ('start', start_date),
+                ('end', end_date),
+                ('sort[0][column]', 'period'),
+                ('sort[0][direction]', 'asc'),
+                ('offset', offset),
+                ('length', 5000),
+            ]
             response = requests.get(self.base_url, params=params)
             
             if response.status_code == 200:
@@ -207,16 +217,17 @@ class EIACollector:
         Returns:
             Processed DataFrame with standardized columns
         """
-        # Rename columns
+        # Rename columns to match expected schema
         processed = df.rename(columns={
             'period': 'timestamp',
             'value': 'demand_MW',
             'respondent': 'balancing_authority'
         })
-        
+
         # Convert timestamp to datetime
         processed['timestamp'] = pd.to_datetime(processed['timestamp'])
-        
+        processed['demand_MW'] = pd.to_numeric(processed['demand_MW'], errors='coerce')
+
         # Keep only relevant columns
         processed = processed[['timestamp', 'balancing_authority', 'demand_MW']]
         
@@ -263,10 +274,10 @@ def create_event_catalog() -> pd.DataFrame:
 def main():
     """Main execution function"""
     
-    # Configuration
-    WATTTIME_USER = "your_username"  # Replace with actual credentials
-    WATTTIME_PASS = "your_password"
-    EIA_API_KEY = "your_api_key"
+    # Configuration — loaded from .env
+    WATTTIME_USER = os.getenv("WATTTIME_USERNAME")
+    WATTTIME_PASS = os.getenv("WATTTIME_PASSWORD")
+    EIA_API_KEY = os.getenv("EIA_API_KEY")
     
     # Initialize collectors
     watttime = WattTimeCollector(WATTTIME_USER, WATTTIME_PASS)
@@ -276,35 +287,44 @@ def main():
     events = create_event_catalog()
     logger.info(f"Loaded {len(events)} events")
     
-    # Collect emissions data
+    # Only collect for CAISO_NORTH (account access is limited to this region)
+    caiso_events = events[events['region'] == 'CAISO']
+    logger.info(f"Collecting WattTime data for {len(caiso_events)} CAISO event(s)")
+
     emissions_data = watttime.collect_multiple_events(
-        region='CAISO',
+        region='CAISO_NORTH',
         event_windows=[
             {'start': row['start'], 'end': row['end'], 'event_id': row['event_id']}
-            for _, row in events.iterrows()
+            for _, row in caiso_events.iterrows()
         ]
     )
-    
-    # Collect demand data
-    demand_data_list = []
-    for _, event in events.iterrows():
-        start_date = (event['start'] - timedelta(days=7)).strftime('%Y-%m-%d')
-        end_date = (event['end'] + timedelta(days=7)).strftime('%Y-%m-%d')
-        
-        demand = eia.get_demand_data(
-            balancing_authority='CISO',
-            start_date=start_date,
-            end_date=end_date
-        )
-        demand['event_id'] = event['event_id']
-        demand_data_list.append(demand)
-    
-    demand_data = pd.concat(demand_data_list, ignore_index=True)
-    demand_data = eia.process_demand_data(demand_data)
-    
+
+    # Collect demand data (requires EIA API key)
+    demand_data = pd.DataFrame()
+    if EIA_API_KEY and EIA_API_KEY != 'your_eia_api_key':
+        demand_data_list = []
+        for _, event in caiso_events.iterrows():
+            start_date = (event['start'] - timedelta(days=7)).strftime('%Y-%m-%d')
+            end_date = (event['end'] + timedelta(days=7)).strftime('%Y-%m-%d')
+
+            demand = eia.get_demand_data(
+                balancing_authority='CISO',
+                start_date=start_date,
+                end_date=end_date
+            )
+            demand['event_id'] = event['event_id']
+            demand_data_list.append(demand)
+
+        if demand_data_list:
+            demand_data = pd.concat(demand_data_list, ignore_index=True)
+            demand_data = eia.process_demand_data(demand_data)
+    else:
+        logger.warning("EIA_API_KEY not set — skipping demand data collection")
+
     # Save raw data
     emissions_data.to_csv('data/raw/emissions_raw.csv', index=False)
-    demand_data.to_csv('data/raw/demand_raw.csv', index=False)
+    if not demand_data.empty:
+        demand_data.to_csv('data/raw/demand_raw.csv', index=False)
     events.to_csv('data/raw/events_catalog.csv', index=False)
     
     logger.info("Data collection complete!")

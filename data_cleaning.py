@@ -6,6 +6,7 @@ Handles missing values, outliers, temporal alignment, and feature engineering
 for grid emissions and demand data.
 """
 
+import os
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -189,7 +190,7 @@ class DataPreprocessor:
         
         # Create uniform 15-minute intervals
         df = df.set_index(time_col)
-        df = df.resample('15min').mean()  # Resample to 15-min intervals
+        df = df.resample('15min').mean(numeric_only=True)  # Resample to 15-min intervals
         df = df.reset_index()
         
         logger.info("Standardized timestamps to UTC with 15-minute intervals")
@@ -302,7 +303,14 @@ def main():
     # Load raw data
     logger.info("Loading raw data...")
     emissions_raw = pd.read_csv('data/raw/emissions_raw.csv')
-    demand_raw = pd.read_csv('data/raw/demand_raw.csv')
+    if 'point_time' in emissions_raw.columns:
+        emissions_raw = emissions_raw.rename(columns={'point_time': 'timestamp'})
+    demand_path = 'data/raw/demand_raw.csv'
+    if not os.path.exists(demand_path):
+        logger.warning("demand_raw.csv not found — skipping demand cleaning (add EIA_API_KEY to .env)")
+        demand_raw = None
+    else:
+        demand_raw = pd.read_csv(demand_path)
     
     # Initialize cleaners
     cleaner = DataCleaner()
@@ -320,38 +328,41 @@ def main():
     )
     emissions = cleaner.detect_and_correct_outliers(emissions, 'value', method='iqr')
     
-    # Clean demand data
-    logger.info("\nCleaning demand data...")
-    demand = cleaner.remove_duplicates(demand_raw, subset=['timestamp', 'balancing_authority'])
-    demand = cleaner.handle_missing_values(demand, 'timestamp', 'demand_MW')
-    demand = cleaner.correct_impossible_values(demand, 'demand_MW', min_val=0)
-    demand = cleaner.detect_and_correct_outliers(demand, 'demand_MW', method='iqr', threshold=3.5)
-    
+    # Clean demand data (only if available)
+    demand = None
+    if demand_raw is not None:
+        logger.info("\nCleaning demand data...")
+        demand = cleaner.remove_duplicates(demand_raw, subset=['timestamp', 'balancing_authority'])
+        demand = cleaner.handle_missing_values(demand, 'timestamp', 'demand_MW')
+        demand = cleaner.correct_impossible_values(demand, 'demand_MW', min_val=0)
+        demand = cleaner.detect_and_correct_outliers(demand, 'demand_MW', method='iqr', threshold=3.5)
+
     # Print cleaning summary
     cleaner.print_summary()
-    
+
     # Preprocess emissions
     logger.info("\nPreprocessing emissions data...")
     emissions = preprocessor.standardize_timestamps(emissions, 'timestamp')
     emissions = preprocessor.create_temporal_features(emissions, 'timestamp')
     emissions = preprocessor.create_rolling_features(emissions, 'value', windows=[24, 168])
     emissions = preprocessor.create_lag_features(emissions, 'value', lags=[4, 24, 96])
-    
-    # Preprocess demand
-    logger.info("\nPreprocessing demand data...")
-    demand = preprocessor.standardize_timestamps(demand, 'timestamp')
-    demand = preprocessor.create_temporal_features(demand, 'timestamp')
-    demand = preprocessor.create_rolling_features(demand, 'demand_MW', windows=[24, 168])
-    demand = preprocessor.create_lag_features(demand, 'demand_MW', lags=[4, 24, 96])
-    
+
+    # Preprocess demand (only if available)
+    if demand is not None:
+        logger.info("\nPreprocessing demand data...")
+        demand = preprocessor.standardize_timestamps(demand, 'timestamp')
+        demand = preprocessor.create_temporal_features(demand, 'timestamp')
+        demand = preprocessor.create_rolling_features(demand, 'demand_MW', windows=[24, 168])
+        demand = preprocessor.create_lag_features(demand, 'demand_MW', lags=[4, 24, 96])
+
     # Save cleaned data
     logger.info("\nSaving cleaned data...")
     emissions.to_csv('data/processed/emissions_clean.csv', index=False)
-    demand.to_csv('data/processed/demand_clean.csv', index=False)
-    
+    if demand is not None:
+        demand.to_csv('data/processed/demand_clean.csv', index=False)
+
     # Generate data quality report
     logger.info("\nGenerating data quality report...")
-    
     report = {
         'emissions': {
             'total_records': len(emissions),
@@ -359,23 +370,25 @@ def main():
             'mean_value': emissions['value'].mean(),
             'std_value': emissions['value'].std(),
             'missing_pct': emissions['value'].isna().sum() / len(emissions) * 100
-        },
-        'demand': {
+        }
+    }
+    if demand is not None:
+        report['demand'] = {
             'total_records': len(demand),
             'date_range': f"{demand['timestamp'].min()} to {demand['timestamp'].max()}",
             'mean_demand': demand['demand_MW'].mean(),
             'std_demand': demand['demand_MW'].std(),
             'missing_pct': demand['demand_MW'].isna().sum() / len(demand) * 100
         }
-    }
-    
+
     import json
     with open('data/processed/data_quality_report.json', 'w') as f:
         json.dump(report, f, indent=2, default=str)
-    
+
     logger.info("Preprocessing complete!")
     logger.info(f"Cleaned emissions records: {len(emissions):,}")
-    logger.info(f"Cleaned demand records: {len(demand):,}")
+    if demand is not None:
+        logger.info(f"Cleaned demand records: {len(demand):,}")
 
 
 if __name__ == "__main__":
