@@ -58,11 +58,22 @@ def save(fig, name):
 e = pd.read_csv('data/processed/emissions_clean.csv', parse_dates=['timestamp'])
 d = pd.read_csv('data/processed/demand_clean.csv',   parse_dates=['timestamp'])
 
+# Demand was hourly before 15-min resampling → 3/4 rows are NaN; strip them for plotting
+d_hourly = d.dropna(subset=['demand_MW']).copy()
+
 # Event window (heat wave peak: Aug 15-18)
 event_start = pd.Timestamp('2024-08-15', tz='UTC')
 event_end   = pd.Timestamp('2024-08-19', tz='UTC')
 e_event = e[(e['timestamp'] >= event_start) & (e['timestamp'] < event_end)]
-d_event = d[(d['timestamp'] >= event_start) & (d['timestamp'] < event_end)]
+d_event = d_hourly[(d_hourly['timestamp'] >= event_start) & (d_hourly['timestamp'] < event_end)]
+
+# Merged dataset for viz 03 & 10: join on nearest timestamp, drop NaN only for key columns
+merged = pd.merge_asof(
+    e[['timestamp','value','hour','day_of_week','is_weekend',
+       'value_rolling_mean_24h','value_rolling_std_24h']].sort_values('timestamp'),
+    d_hourly[['timestamp','demand_MW']].sort_values('timestamp'),
+    on='timestamp', direction='nearest', tolerance=pd.Timedelta('30min')
+).dropna(subset=['value', 'demand_MW'])
 
 
 # ── VIZ 01: Time Series – Demand & Emissions During Heat Wave ────────────────
@@ -70,15 +81,15 @@ fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
 fig.suptitle('Viz 01 · Time Series: Emissions & Demand During Aug 2024 Heat Wave',
              color=TEXT, fontsize=13, fontweight='bold', y=1.01)
 
-# Emissions
+# Emissions (15-min resolution, no NaN)
 ax1.plot(e['timestamp'], e['value'], color=CYAN, lw=1.2, alpha=0.7, label='CO₂ MOER')
 ax1.axvspan(event_start, event_end, color=ORANGE, alpha=0.15, label='Heat Wave')
 ax1.set_ylabel('CO₂ MOER (lbs/MWh)', color=TEXT)
 ax1.legend(facecolor=CARD_BG, edgecolor=MUTED, labelcolor=TEXT)
 ax1.grid(True)
 
-# Demand
-ax2.plot(d['timestamp'], d['demand_MW'], color=YELLOW, lw=1.2, alpha=0.7, label='Demand (MW)')
+# Demand: plot only valid hourly readings (no NaN gaps)
+ax2.plot(d_hourly['timestamp'], d_hourly['demand_MW'], color=YELLOW, lw=1.2, alpha=0.7, label='Demand (MWh)')
 ax2.axvspan(event_start, event_end, color=ORANGE, alpha=0.15, label='Heat Wave')
 ax2.set_ylabel('Demand (MWh)', color=TEXT)
 ax2.set_xlabel('Date (UTC)', color=TEXT)
@@ -129,18 +140,12 @@ save(fig, 'viz02_distribution.png')
 
 
 # ── VIZ 03: Correlation Heatmap ──────────────────────────────────────────────
-merged = pd.merge_asof(
-    e[['timestamp','value','hour','day_of_week','is_weekend',
-       'value_rolling_mean_24h','value_rolling_std_24h']].sort_values('timestamp'),
-    d[['timestamp','demand_MW','demand_MW_rolling_mean_24h']].sort_values('timestamp'),
-    on='timestamp', direction='nearest'
-).dropna()
-
+# Use the pre-built merged dataframe (demand_MW_rolling_mean_24h is all-NaN so excluded)
 corr_cols = ['value','demand_MW','hour','day_of_week','is_weekend',
-             'value_rolling_mean_24h','value_rolling_std_24h','demand_MW_rolling_mean_24h']
+             'value_rolling_mean_24h','value_rolling_std_24h']
 corr_labels = ['CO₂ MOER','Demand MW','Hour','Day of Week','Is Weekend',
-               'MOER Roll Mean 24h','MOER Roll Std 24h','Demand Roll Mean 24h']
-corr = merged[corr_cols].corr()
+               'MOER Roll Mean 24h','MOER Roll Std 24h']
+corr = merged[corr_cols].dropna().corr()
 corr.index = corr_labels
 corr.columns = corr_labels
 
@@ -346,13 +351,13 @@ save(fig, 'viz09_cumulative.png')
 
 
 # ── VIZ 10: Pair Plot – Multivariate Relationships ──────────────────────────
-pair_data = merged[['value','demand_MW','hour','day_of_week','value_rolling_mean_24h']].dropna()
-pair_data.columns = ['CO₂ MOER','Demand MW','Hour','Day','MOER 24h Avg']
+pair_data = merged[['timestamp','value','demand_MW','hour','day_of_week','value_rolling_mean_24h']].dropna().copy()
 pair_data['Period'] = np.where(
-    (merged.loc[pair_data.index,'timestamp'] >= event_start) &
-    (merged.loc[pair_data.index,'timestamp'] <  event_end),
+    (pair_data['timestamp'] >= event_start) & (pair_data['timestamp'] < event_end),
     'Heat Wave', 'Baseline'
 )
+pair_data = pair_data.drop(columns='timestamp')
+pair_data.columns = ['CO₂ MOER','Demand MW','Hour','Day','MOER 24h Avg','Period']
 
 palette = {'Baseline': CYAN, 'Heat Wave': ORANGE}
 g = sns.pairplot(pair_data, hue='Period', palette=palette,
