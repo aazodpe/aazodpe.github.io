@@ -619,6 +619,7 @@
                 <li><a href="#proposal">Proposal</a></li>
                 <li><a href="#data-exploration">Data Exploration</a></li>
                 <li><a href="#research">Research Questions</a></li>
+                <li><a href="#models">Models</a></li>
                 <li><a href="#team">Team</a></li>
             </ul>
         </div>
@@ -1550,10 +1551,284 @@ timestamp_utc,region,demand_MW,emissions_lbs_MWh,is_interpolated
         </div>
     </section>
 
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SECTION 08 — MODELS IMPLEMENTED                           -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <section id="models" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-number">08 // MODELS IMPLEMENTED</div>
+                <h2>Machine Learning Models</h2>
+                <p class="section-description">
+                    Four models spanning clustering, classification, regression, and frequent pattern mining — each chosen to address a different facet of the grid resilience research question.
+                </p>
+            </div>
+
+            <!-- ── Data Transformation Snapshot ─────────────────────── -->
+            <div style="margin-bottom: 3rem; padding: 2rem; background: var(--bg-card); border-left: 4px solid var(--accent-primary); border-radius: 8px;">
+                <h3 style="color: var(--accent-primary); font-family: 'IBM Plex Mono', monospace; font-size: 1rem; letter-spacing: 1px; margin-bottom: 1rem;">DATA FORMATTING FOR MODELS</h3>
+                <div class="content-grid" style="grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: 0.5rem;">Before Transformation</h4>
+                        <ul style="color: var(--text-secondary); padding-left: 1.2rem; line-height: 2;">
+                            <li>Demand data: 75% missing (originally hourly, resampled to 15-min)</li>
+                            <li>Rolling/lag features with leading NaN windows</li>
+                            <li>Season stored as string category</li>
+                            <li>No event labels on time windows</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: 0.5rem;">After Transformation</h4>
+                        <ul style="color: var(--text-secondary); padding-left: 1.2rem; line-height: 2;">
+                            <li>Demand forward-filled → 0% missing at 15-min resolution</li>
+                            <li>Rolling features back/forward-filled for window boundaries</li>
+                            <li>Season label-encoded; peak-hour binary feature added</li>
+                            <li>Binary <code style="color: var(--accent-primary);">is_event</code> label applied (Aug 15–18, 2024 heat wave)</li>
+                        </ul>
+                    </div>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 1rem;">
+                    Final merged dataset: <strong style="color: var(--accent-primary);">1,725 rows × 15 features</strong> &nbsp;|&nbsp;
+                    Event rows: <strong style="color: var(--accent-secondary);">384 (22.3%)</strong> &nbsp;|&nbsp;
+                    Normal rows: <strong style="color: var(--accent-tertiary);">1,341 (77.7%)</strong>
+                </p>
+            </div>
+
+            <!-- ── Model 1: K-Means Clustering ───────────────────────── -->
+            <div style="margin-bottom: 4rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                    <span style="background: var(--accent-primary); color: var(--bg-primary); font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 4px;">CLUSTERING</span>
+                    <h3 style="font-size: 1.6rem; color: var(--text-primary);">Model 1 — K-Means Clustering</h3>
+                </div>
+                <div class="content-grid" style="grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <div class="card" style="height: 100%;">
+                            <h3 style="color: var(--accent-primary); margin-bottom: 1rem;">Why K-Means?</h3>
+                            <p>K-Means is well-suited to our continuous numeric features (MOER, demand, hour) and provides interpretable centroid-based clusters. Given the known diurnal demand cycle and the bimodal emissions distribution across CAISO, K-Means cleanly separates low-demand off-peak states from high-emission peak-demand stress states without requiring labelled data.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="card" style="height: 100%;">
+                            <h3 style="color: var(--accent-primary); margin-bottom: 1rem;">Assumptions &amp; Hyperparameters</h3>
+                            <p><strong>Assumptions:</strong> Clusters are roughly spherical in feature space; Euclidean distance is a meaningful similarity measure. StandardScaler applied to resolve the MOER vs. demand magnitude mismatch.</p>
+                            <p style="margin-top: 0.8rem;"><strong>Tuning:</strong> k swept 2–8; best k=<strong style="color: var(--accent-primary);">4</strong> selected via silhouette analysis. n_init=20 for stable centroids.</p>
+                            <p style="margin-top: 0.8rem;"><strong>Challenge:</strong> 18-day window limits temporal diversity. Resolved by weighting temporal features (hour, is_weekend) alongside instantaneous readings.</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="background: var(--bg-card); border-radius: 8px; overflow: hidden; border: 1px solid var(--border);">
+                    <img src="figures/model_01_clustering.png" alt="K-Means Clustering Results" style="width: 100%; display: block;">
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-primary); font-weight: 700;">0.584</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">Silhouette Score</div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">↑ higher is better</div>
+                    </div>
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-secondary); font-weight: 700;">0.632</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">Davies-Bouldin Index</div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">↓ lower is better</div>
+                    </div>
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-tertiary); font-weight: 700;">4</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">Optimal Clusters</div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">High-Stress · High-Emit · High-Demand · Low-Carbon</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Model 2: Random Forest ──────────────────────────────── -->
+            <div style="margin-bottom: 4rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                    <span style="background: var(--accent-secondary); color: white; font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 4px;">CLASSIFICATION</span>
+                    <h3 style="font-size: 1.6rem; color: var(--text-primary);">Model 2 — Random Forest Classifier</h3>
+                </div>
+                <div class="content-grid" style="grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <div class="card" style="height: 100%;">
+                            <h3 style="color: var(--accent-secondary); margin-bottom: 1rem;">Why Random Forest?</h3>
+                            <p>Random Forest captures non-linear interactions between demand, MOER, and temporal features without requiring feature scaling. Its built-in feature importance scores directly answer which grid signals are most predictive of hazardous event conditions — a key research question. class_weight='balanced' addresses the 22/78 event/normal imbalance.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="card" style="height: 100%;">
+                            <h3 style="color: var(--accent-secondary); margin-bottom: 1rem;">Assumptions &amp; Hyperparameters</h3>
+                            <p><strong>Assumptions:</strong> Tree splits at arbitrary thresholds capture the non-linear, threshold-like nature of grid stress; ensemble averaging reduces overfitting on the 18-day window.</p>
+                            <p style="margin-top: 0.8rem;"><strong>Tuning (GridSearchCV, 5-fold):</strong> n_estimators ∈ {100, 200}, max_depth ∈ {5, 10, None}. Best: n_estimators=200, max_depth=10.</p>
+                            <p style="margin-top: 0.8rem;"><strong>Challenge:</strong> Rolling MOER features are near-perfect discriminators of the event window, yielding very high metrics. In production, time-series cross-validation would be required.</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="background: var(--bg-card); border-radius: 8px; overflow: hidden; border: 1px solid var(--border);">
+                    <img src="figures/model_02_classification.png" alt="Random Forest Classification Results" style="width: 100%; display: block;">
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-primary); font-weight: 700;">1.00</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">Accuracy</div>
+                    </div>
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-secondary); font-weight: 700;">1.00</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">Precision</div>
+                    </div>
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-tertiary); font-weight: 700;">1.00</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">Recall</div>
+                    </div>
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-primary); font-weight: 700;">1.00</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">F1-Score</div>
+                    </div>
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-secondary); font-weight: 700;">1.00</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">ROC-AUC</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Model 3: Linear Regression ─────────────────────────── -->
+            <div style="margin-bottom: 4rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                    <span style="background: var(--accent-tertiary); color: var(--bg-primary); font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 4px;">REGRESSION</span>
+                    <h3 style="font-size: 1.6rem; color: var(--text-primary);">Model 3 — Linear Regression</h3>
+                </div>
+                <div class="content-grid" style="grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <div class="card" style="height: 100%;">
+                            <h3 style="color: var(--accent-tertiary); margin-bottom: 1rem;">Why Linear Regression?</h3>
+                            <p>Linear regression establishes the quantitative baseline for the demand–emissions relationship and directly tests the project's core research question. Standardised coefficients reveal which predictors drive MOER most, while residual analysis exposes exactly where the linear assumption breaks down — typically during hazardous events when peaker plants alter the usual demand-carbon curve.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="card" style="height: 100%;">
+                            <h3 style="color: var(--accent-tertiary); margin-bottom: 1rem;">Assumptions &amp; Hyperparameters</h3>
+                            <p><strong>Assumptions:</strong> Linear relationship between predictors and MOER; homoscedastic residuals; features are independent. StandardScaler applied for coefficient comparability.</p>
+                            <p style="margin-top: 0.8rem;"><strong>Tuning:</strong> OLS (no regularisation). The event indicator term was added iteratively after residual inspection showed systematic over-prediction during Aug 15–18.</p>
+                            <p style="margin-top: 0.8rem;"><strong>Challenge:</strong> MOER during the heat-wave event departs sharply from its demand-driven baseline — non-linear dynamics not captured by OLS inflate RMSE. Future work: gradient boosting.</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="background: var(--bg-card); border-radius: 8px; overflow: hidden; border: 1px solid var(--border);">
+                    <img src="figures/model_03_regression.png" alt="Linear Regression Results" style="width: 100%; display: block;">
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-tertiary); font-weight: 700;">105.4</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">RMSE (lbs CO₂/MWh)</div>
+                    </div>
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-primary); font-weight: 700;">11,114</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">MSE</div>
+                    </div>
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-secondary); font-weight: 700;">0.237</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">R²-Score</div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">linear model baseline</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Model 4: FP-Growth ─────────────────────────────────── -->
+            <div style="margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                    <span style="background: #a8ff78; color: var(--bg-primary); font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 4px;">FREQ. PATTERN MINING</span>
+                    <h3 style="font-size: 1.6rem; color: var(--text-primary);">Model 4 — FP-Growth Association Rules</h3>
+                </div>
+                <div class="content-grid" style="grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <div class="card" style="height: 100%;">
+                            <h3 style="color: #a8ff78; margin-bottom: 1rem;">Why FP-Growth?</h3>
+                            <p>FP-Growth uncovers co-occurring operational conditions without a predefined target variable. Preferred over Apriori because it avoids repeated database scans via a prefix-tree structure, scaling better with our 12-item encoding. The discovered rules reveal which combinations of emissions level, demand level, and time-of-day co-occur most frequently — providing actionable operational insights beyond what supervised models offer.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="card" style="height: 100%;">
+                            <h3 style="color: #a8ff78; margin-bottom: 1rem;">Assumptions &amp; Hyperparameters</h3>
+                            <p><strong>Assumptions:</strong> Items within a transaction are unordered; support is a meaningful frequency measure. Continuous features discretised into binary/categorical bins with semantically meaningful boundaries.</p>
+                            <p style="margin-top: 0.8rem;"><strong>Tuning:</strong> min_support swept 0.30→0.05; min_confidence=0.60. Best: min_support=<strong style="color: #a8ff78;">0.30</strong>, yielding 26 itemsets and 34 rules.</p>
+                            <p style="margin-top: 0.8rem;"><strong>Challenge:</strong> Discretisation boundaries must be chosen carefully to produce semantically meaningful bins rather than arbitrary statistical splits.</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="background: var(--bg-card); border-radius: 8px; overflow: hidden; border: 1px solid var(--border);">
+                    <img src="figures/model_04_fpm.png" alt="FP-Growth Frequent Pattern Mining Results" style="width: 100%; display: block;">
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: #a8ff78; font-weight: 700;">34</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">Association Rules</div>
+                    </div>
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-primary); font-weight: 700;">1.77</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">Top Rule Lift</div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">off_peak → high_demand</div>
+                    </div>
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-secondary); font-weight: 700;">0.88</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">Max Confidence</div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">88% rule reliability</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Model Comparison Summary ────────────────────────────── -->
+            <div style="margin-top: 3rem; padding: 2rem; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border);">
+                <h3 style="color: var(--text-primary); margin-bottom: 1.5rem;">Model Performance Comparison</h3>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--accent-primary);">
+                                <th style="text-align: left; padding: 0.8rem; color: var(--accent-primary);">Model</th>
+                                <th style="text-align: left; padding: 0.8rem; color: var(--accent-primary);">Category</th>
+                                <th style="text-align: left; padding: 0.8rem; color: var(--accent-primary);">Primary Metric</th>
+                                <th style="text-align: left; padding: 0.8rem; color: var(--accent-primary);">Score</th>
+                                <th style="text-align: left; padding: 0.8rem; color: var(--accent-primary);">Best For</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 0.8rem; color: var(--text-primary);">K-Means</td>
+                                <td style="padding: 0.8rem; color: var(--accent-primary);">Clustering</td>
+                                <td style="padding: 0.8rem; color: var(--text-secondary);">Silhouette Score</td>
+                                <td style="padding: 0.8rem; color: var(--accent-primary); font-weight: 700;">0.584</td>
+                                <td style="padding: 0.8rem; color: var(--text-secondary);">Discovering grid state archetypes</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 0.8rem; color: var(--text-primary);">Random Forest</td>
+                                <td style="padding: 0.8rem; color: var(--accent-secondary);">Classification</td>
+                                <td style="padding: 0.8rem; color: var(--text-secondary);">ROC-AUC</td>
+                                <td style="padding: 0.8rem; color: var(--accent-secondary); font-weight: 700;">1.000</td>
+                                <td style="padding: 0.8rem; color: var(--text-secondary);">Event detection with feature importance</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 0.8rem; color: var(--text-primary);">Linear Regression</td>
+                                <td style="padding: 0.8rem; color: var(--accent-tertiary);">Regression</td>
+                                <td style="padding: 0.8rem; color: var(--text-secondary);">R²</td>
+                                <td style="padding: 0.8rem; color: var(--accent-tertiary); font-weight: 700;">0.237</td>
+                                <td style="padding: 0.8rem; color: var(--text-secondary);">Baseline demand–MOER quantification</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.8rem; color: var(--text-primary);">FP-Growth</td>
+                                <td style="padding: 0.8rem; color: #a8ff78;">Freq. Pattern</td>
+                                <td style="padding: 0.8rem; color: var(--text-secondary);">Max Lift</td>
+                                <td style="padding: 0.8rem; color: #a8ff78; font-weight: 700;">1.77</td>
+                                <td style="padding: 0.8rem; color: var(--text-secondary);">Operational co-occurrence patterns</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="margin-top: 1.5rem; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7;">
+                    <strong style="color: var(--text-primary);">Key finding:</strong> The Random Forest classifier achieves near-perfect event detection because the heat-wave event (Aug 15–18) produces systematically distinct 24-hour rolling MOER signatures. The linear regression baseline (R²=0.237) confirms that demand alone is a weak predictor of MOER — supporting the hypothesis that hazardous events fundamentally alter the demand–carbon relationship. K-Means clustering reveals four operationally meaningful grid states, with the Low-Carbon cluster coinciding most strongly with the event period, reflecting CAISO's renewable generation surge during the heat wave. FP-Growth rules confirm that off-peak hours are strongly associated with high-demand states in this dataset (lift=1.77), reflecting overnight industrial load patterns.
+                </p>
+            </div>
+        </div>
+    </section>
+
     <section id="team">
         <div class="container">
             <div class="section-header">
-                <div class="section-number">08 // TEAM</div>
+                <div class="section-number">09 // TEAM</div>
                 <h2>Meet the Research Team</h2>
                 <p class="section-description">
                     A multidisciplinary group bringing together expertise in data science, energy systems, and environmental analysis
