@@ -178,7 +178,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Contact
 
-**Project Website:** [https://your-website-url.github.io](https://your-website-url.github.io)
+**Project Website:**  [Project Website](https://aazodpe.github.io/)
 
 **Team Email:** group4-grid-analytics@university.edu
 
