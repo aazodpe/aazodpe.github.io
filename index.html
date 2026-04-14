@@ -1706,30 +1706,42 @@ timestamp_utc,region,demand_MW,emissions_lbs_MWh,is_interpolated
                 <div style="background: var(--bg-card); border-radius: 8px; overflow: hidden; border: 1px solid var(--border);">
                     <img src="figures/model_02_classification.png" alt="Logistic Regression Classification Results" style="width: 100%; display: block;">
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem;">
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-top: 1.5rem;">
                     <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
                         <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-primary); font-weight: 700;">0.48</div>
                         <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">CV Accuracy</div>
-                        <div style="color: var(--text-secondary); font-size: 0.8rem;">% of events correctly classified</div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">% correctly classified</div>
                     </div>
                     <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
-                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-secondary); font-weight: 700;">0.31</div>
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-secondary); font-weight: 700;">0.28</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">CV Precision</div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">True pos / predicted pos</div>
+                    </div>
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-tertiary); font-weight: 700;">0.40</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">CV Recall</div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">True pos / actual pos</div>
+                    </div>
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-primary); font-weight: 700;">0.31</div>
                         <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">CV F1-Score</div>
-                        <div style="color: var(--text-secondary); font-size: 0.8rem;">Harmonic mean of precision &amp; recall</div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">Harmonic mean of P &amp; R</div>
                     </div>
                     <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
-                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-tertiary); font-weight: 700;">0.65</div>
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-secondary); font-weight: 700;">0.65</div>
                         <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">CV ROC-AUC</div>
-                        <div style="color: var(--text-secondary); font-size: 0.8rem;">Ranking ability; 0.5 = random baseline</div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">0.5 = random baseline</div>
                     </div>
                 </div>
                 <\!-- Metric explanations -->
                 <div style="margin-top: 1rem; padding: 1rem 1.5rem; background: rgba(0,217,255,0.04); border: 1px solid var(--border); border-radius: 8px;">
                     <span style="font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--accent-primary); letter-spacing: 1px;">WHAT THESE METRICS MEAN</span>
                     <p style="color: var(--text-secondary); font-size: 0.88rem; margin-top: 0.5rem;">
-                        <strong style="color: var(--text-primary);">CV Accuracy (0.48):</strong> With only 23 events and 5-fold CV, each test fold has ~5 samples, making accuracy volatile. The below-chance value reflects honest generalization on a small dataset, not model failure.
-                        &nbsp;&nbsp;<strong style="color: var(--text-primary);">F1-Score (0.31):</strong> Harmonic mean of precision and recall; low F1 confirms that demand features alone are a weak predictor of emission levels.
-                        &nbsp;&nbsp;<strong style="color: var(--text-primary);">ROC-AUC (0.65):</strong> Measures ranking ability — the model correctly orders a high-emission event above a low-emission one 65% of the time. AUC &gt; 0.5 confirms that demand-side signals carry real, if modest, predictive signal.
+                        <strong style="color: var(--text-primary);">CV Accuracy (0.48):</strong> With only 23 events and 5-fold CV, each test fold has ~5 samples, making accuracy volatile. Below-chance accuracy reflects honest generalization on a small dataset, not model failure.
+                        &nbsp;&nbsp;<strong style="color: var(--text-primary);">Precision (0.28):</strong> Of the events the model predicts as high-emission, 28% actually are — low precision reflects the small sample and class imbalance.
+                        &nbsp;&nbsp;<strong style="color: var(--text-primary);">Recall (0.40):</strong> The model identifies 40% of true high-emission events — higher than precision, reflecting the balanced class_weight setting which favours sensitivity.
+                        &nbsp;&nbsp;<strong style="color: var(--text-primary);">F1-Score (0.31):</strong> Harmonic mean of precision and recall; confirms demand features alone are a weak but non-trivial predictor.
+                        &nbsp;&nbsp;<strong style="color: var(--text-primary);">ROC-AUC (0.65):</strong> AUC &gt; 0.5 confirms demand-side signals carry real, if modest, predictive signal regardless of threshold.
                     </p>
                 </div>
             </div>
@@ -1820,10 +1832,16 @@ timestamp_utc,region,demand_MW,emissions_lbs_MWh,is_interpolated
                 <div style="background: var(--bg-card); border-radius: 8px; overflow: hidden; border: 1px solid var(--border);">
                     <img src="figures/model_04_fpm.png" alt="FP-Growth Frequent Pattern Mining Results" style="width: 100%; display: block;">
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem;">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
+                        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: #a8ff78; font-weight: 700;">0.30</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">Min Support</div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">30% of transactions</div>
+                    </div>
                     <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
                         <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: #a8ff78; font-weight: 700;">34</div>
                         <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">Association Rules</div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">at min_conf=0.60</div>
                     </div>
                     <div style="padding: 1.2rem; background: var(--bg-card); border-radius: 8px; text-align: center; border: 1px solid var(--border);">
                         <div style="font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; color: var(--accent-primary); font-weight: 700;">1.77</div>

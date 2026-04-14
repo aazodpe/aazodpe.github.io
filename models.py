@@ -368,15 +368,21 @@ def run_classification() -> dict:
     ])
 
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    acc_scores = cross_val_score(pipe, X, y, cv=cv, scoring="accuracy")
-    f1_scores  = cross_val_score(pipe, X, y, cv=cv, scoring="f1")
-    auc_scores = cross_val_score(pipe, X, y, cv=cv, scoring="roc_auc")
+    acc_scores  = cross_val_score(pipe, X, y, cv=cv, scoring="accuracy")
+    prec_scores = cross_val_score(pipe, X, y, cv=cv, scoring="precision")
+    rec_scores  = cross_val_score(pipe, X, y, cv=cv, scoring="recall")
+    f1_scores   = cross_val_score(pipe, X, y, cv=cv, scoring="f1")
+    auc_scores  = cross_val_score(pipe, X, y, cv=cv, scoring="roc_auc")
 
     acc  = float(np.mean(acc_scores))
+    prec = float(np.mean(prec_scores))
+    rec  = float(np.mean(rec_scores))
     f1   = float(np.mean(f1_scores))
     auc  = float(np.mean(auc_scores))
 
     print(f"CV Accuracy : {acc:.4f} ± {np.std(acc_scores):.4f}")
+    print(f"CV Precision: {prec:.4f} ± {np.std(prec_scores):.4f}")
+    print(f"CV Recall   : {rec:.4f} ± {np.std(rec_scores):.4f}")
     print(f"CV F1-Score : {f1:.4f} ± {np.std(f1_scores):.4f}")
     print(f"CV ROC-AUC  : {auc:.4f} ± {np.std(auc_scores):.4f}")
 
@@ -436,7 +442,7 @@ def run_classification() -> dict:
     ax.set_title("ROC Curve (5-Fold CV)", color=TEXT)
     ax.legend(framealpha=0.3)
 
-    metrics_text = f"CV Accuracy {acc:.3f}\nCV F1-Score {f1:.3f}\nCV ROC-AUC  {auc:.3f}"
+    metrics_text = f"Accuracy {acc:.3f}\nPrecision {prec:.3f}\nRecall   {rec:.3f}\nF1-Score {f1:.3f}\nROC-AUC  {auc:.3f}"
     ax.text(0.98, 0.20, metrics_text, transform=ax.transAxes,
             fontsize=9, va="bottom", ha="right",
             color=TEXT, fontfamily="monospace",
@@ -449,11 +455,13 @@ def run_classification() -> dict:
     print(f"Saved → {out}")
 
     return {
-        "model":    "Logistic Regression Classification",
-        "cv_folds": 5,
-        "accuracy": round(acc, 4),
-        "f1_score": round(f1, 4),
-        "roc_auc":  round(auc, 4),
+        "model":     "Logistic Regression Classification",
+        "cv_folds":  5,
+        "accuracy":  round(acc, 4),
+        "precision": round(prec, 4),
+        "recall":    round(rec, 4),
+        "f1_score":  round(f1, 4),
+        "roc_auc":   round(auc, 4),
         "top_features": coefs.abs().sort_values(ascending=False).index.tolist(),
     }
 
