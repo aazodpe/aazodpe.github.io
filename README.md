@@ -158,7 +158,7 @@ Our data cleaning pipeline addresses:
 
 - ✅ **Milestone 1:** Project framing, research questions, website launch
 - ✅ **Milestone 2:** Data collection, cleaning, exploratory analysis
-- ⏳ **Milestone 3:** Feature engineering, clustering analysis
+- ✅  **Milestone 3:** Feature engineering, clustering analysis
 - ⏳ **Milestone 4:** Final analysis, comprehensive reporting
 
 ## Contributing
