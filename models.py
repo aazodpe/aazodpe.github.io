@@ -4,7 +4,7 @@ Group 4 – Grid Resilience & Carbon Analytics
 
 Implements four ML models:
   1. K-Means Clustering     – Identify distinct grid operational states
-  2. Random Forest           – Classify event vs. normal periods
+  2. Logistic Regression      – Classify high vs. low emission events
   3. Linear Regression       – Predict MOER from demand & temporal features
   4. FP-Growth               – Discover frequent patterns in discretised grid states
 
@@ -30,9 +30,10 @@ import seaborn as sns
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold, cross_val_score
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     roc_auc_score, roc_curve, confusion_matrix,
@@ -319,98 +320,104 @@ def _name_clusters(profiles: pd.DataFrame) -> dict:
 # MODEL 2 – RANDOM FOREST CLASSIFICATION
 # ══════════════════════════════════════════════════════════════
 
-def run_classification(df: pd.DataFrame) -> dict:
+def run_classification() -> dict:
     """
-    Random Forest classifier: Event vs. Normal grid periods.
+    Logistic Regression classifier: High vs. Low emission grid events.
 
-    Why chosen: Random Forest handles non-linear interactions and is robust
-    to class imbalance with class_weight='balanced'. It also provides
-    interpretable feature importances, revealing which grid signals are most
-    predictive of hazardous events.
+    Why chosen: Logistic Regression with a balanced-class pipeline is well-
+    suited for the small, event-level dataset (23 observations). It provides
+    interpretable coefficients showing which demand features drive high
+    marginal CO₂ emissions, and cross-validation handles the limited sample.
 
-    Assumptions: Features are informative of the underlying event state;
-    tree-based splits do not require feature scaling.
+    Data source: data/processed/event_features.csv (23 event-level rows).
 
-    Hyperparameter tuning: GridSearchCV over n_estimators and max_depth.
+    Target: high_emission = 1 if peak_moer > 60th percentile of peak_moer.
 
-    Challenges: 22% positive class (event) requires balanced weighting to
-    avoid the model defaulting to predicting 'normal' everywhere.
+    Features: peak_demand, avg_demand, duration_hours, demand_range.
+
+    Pipeline: SimpleImputer (median) → StandardScaler → LogisticRegression.
+
+    Hyperparameter tuning: StratifiedKFold CV (n_splits=5).
     """
     print("\n" + "="*60)
-    print("MODEL 2 – RANDOM FOREST CLASSIFICATION")
+    print("MODEL 2 – LOGISTIC REGRESSION CLASSIFICATION")
     print("="*60)
 
-    feature_cols = ["value", "demand_MW", "hour", "day_of_week",
-                    "is_weekend", "is_peak_hour",
-                    "value_rolling_mean_24h", "value_rolling_std_24h",
-                    "value_lag_4", "value_lag_24"]
+    ef_path = os.path.join(BASE, "data", "processed", "event_features.csv")
+    ef = pd.read_csv(ef_path)
+    print(f"Loaded event_features: {ef.shape[0]} rows, {ef.shape[1]} cols")
 
-    sub = df.dropna(subset=feature_cols + ["is_event"]).copy()
-    X   = sub[feature_cols].values
-    y   = sub["is_event"].values
+    # ── Feature engineering ────────────────────────────────────
+    threshold = ef["peak_moer"].quantile(0.60)
+    ef["high_emission"] = (ef["peak_moer"] > threshold).astype(int)
+    ef["demand_range"]  = ef["peak_demand"] - ef["avg_demand"]
 
-    print(f"Class distribution → Normal: {(y==0).sum()}  Event: {(y==1).sum()}")
+    feature_cols = ["peak_demand", "avg_demand", "duration_hours", "demand_range"]
+    X = ef[feature_cols].values
+    y = ef["high_emission"].values
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.25, random_state=42, stratify=y)
+    pos = int(y.sum())
+    neg = int((y == 0).sum())
+    print(f"Class distribution → Low-emission: {neg}  High-emission: {pos}")
 
-    # ── Hyperparameter tuning ──────────────────────────────────
-    param_grid = {
-        "n_estimators": [100, 200],
-        "max_depth":    [5, 10, None],
-    }
-    rf_base = RandomForestClassifier(class_weight="balanced", random_state=42)
-    gs = GridSearchCV(rf_base, param_grid, cv=5, scoring="f1", n_jobs=-1)
-    gs.fit(X_train, y_train)
+    # ── Pipeline ───────────────────────────────────────────────
+    pipe = Pipeline([
+        ("imputer", SimpleImputer(strategy="median")),
+        ("scaler",  StandardScaler()),
+        ("clf",     LogisticRegression(class_weight="balanced", max_iter=1000, random_state=42)),
+    ])
 
-    best_params = gs.best_params_
-    print(f"Best params: {best_params}")
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    acc_scores = cross_val_score(pipe, X, y, cv=cv, scoring="accuracy")
+    f1_scores  = cross_val_score(pipe, X, y, cv=cv, scoring="f1")
+    auc_scores = cross_val_score(pipe, X, y, cv=cv, scoring="roc_auc")
 
-    rf = gs.best_estimator_
-    y_pred  = rf.predict(X_test)
-    y_proba = rf.predict_proba(X_test)[:, 1]
+    acc  = float(np.mean(acc_scores))
+    f1   = float(np.mean(f1_scores))
+    auc  = float(np.mean(auc_scores))
 
-    acc   = accuracy_score(y_test, y_pred)
-    prec  = precision_score(y_test, y_pred, zero_division=0)
-    rec   = recall_score(y_test, y_pred, zero_division=0)
-    f1    = f1_score(y_test, y_pred, zero_division=0)
-    auc   = roc_auc_score(y_test, y_proba)
-    cm    = confusion_matrix(y_test, y_pred)
-    fpr, tpr, _ = roc_curve(y_test, y_proba)
+    print(f"CV Accuracy : {acc:.4f} ± {np.std(acc_scores):.4f}")
+    print(f"CV F1-Score : {f1:.4f} ± {np.std(f1_scores):.4f}")
+    print(f"CV ROC-AUC  : {auc:.4f} ± {np.std(auc_scores):.4f}")
 
-    print(f"\nAccuracy:  {acc:.4f}")
-    print(f"Precision: {prec:.4f}")
-    print(f"Recall:    {rec:.4f}")
-    print(f"F1-Score:  {f1:.4f}")
-    print(f"ROC-AUC:   {auc:.4f}")
+    # Fit once on full data for coefficients + visuals
+    pipe.fit(X, y)
+    clf     = pipe.named_steps["clf"]
+    scaler  = pipe.named_steps["scaler"]
+    coefs   = pd.Series(clf.coef_[0], index=feature_cols)
+    y_pred  = pipe.predict(X)
+    y_proba = pipe.predict_proba(X)[:, 1]
 
-    # Feature importances
-    importances = pd.Series(rf.feature_importances_, index=feature_cols).sort_values(ascending=True)
+    # Will use LOO-style probabilities from CV for ROC
+    from sklearn.model_selection import cross_val_predict
+    y_proba_cv = cross_val_predict(pipe, X, y, cv=cv, method="predict_proba")[:, 1]
+    fpr, tpr, _ = roc_curve(y, y_proba_cv)
+    cm = confusion_matrix(y, y_pred)
 
     # ── FIGURE ────────────────────────────────────────────────
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))
     fig.patch.set_facecolor(DARK_BG)
-    fig.suptitle("Random Forest Classification  ·  Event vs. Normal Periods",
+    fig.suptitle("Logistic Regression  ·  High vs. Low Emission Events",
                  color=TEXT, fontsize=15, fontweight="bold", y=1.01)
 
-    # Panel A: Feature importances
+    # Panel A: Coefficients
     ax = axes[0]
     ax.set_facecolor(CARD_BG)
-    colors = [ACCENT if i >= len(importances) - 4 else MUTED
-              for i in range(len(importances))]
-    bars = ax.barh(importances.index, importances.values, color=colors, alpha=0.85)
-    ax.set_xlabel("Feature Importance")
-    ax.set_title("Feature Importances", color=TEXT)
-    ax.axvline(importances.values.mean(), color=ACCENT3, lw=1.5, ls="--", alpha=0.8)
+    sorted_coefs = coefs.sort_values()
+    bar_colors = [ACCENT2 if v < 0 else ACCENT for v in sorted_coefs]
+    ax.barh(sorted_coefs.index, sorted_coefs.values, color=bar_colors, alpha=0.85)
+    ax.axvline(0, color=MUTED, lw=1.5, ls="--")
+    ax.set_xlabel("Coefficient (scaled)")
+    ax.set_title("Logistic Regression Coefficients", color=TEXT)
 
     # Panel B: Confusion matrix
     ax = axes[1]
     ax.set_facecolor(CARD_BG)
     cm_pct = cm.astype(float) / cm.sum(axis=1, keepdims=True)
-    im = ax.imshow(cm_pct, cmap="Blues", vmin=0, vmax=1)
+    ax.imshow(cm_pct, cmap="Blues", vmin=0, vmax=1)
     ax.set_xticks([0, 1]); ax.set_yticks([0, 1])
-    ax.set_xticklabels(["Normal", "Event"])
-    ax.set_yticklabels(["Normal", "Event"])
+    ax.set_xticklabels(["Low", "High"])
+    ax.set_yticklabels(["Low", "High"])
     ax.set_xlabel("Predicted"); ax.set_ylabel("Actual")
     ax.set_title("Confusion Matrix (row %)", color=TEXT)
     for i in range(2):
@@ -419,18 +426,17 @@ def run_classification(df: pd.DataFrame) -> dict:
                     ha="center", va="center",
                     color="white" if cm_pct[i, j] > 0.5 else TEXT, fontsize=12)
 
-    # Panel C: ROC curve
+    # Panel C: ROC curve (CV probabilities)
     ax = axes[2]
     ax.set_facecolor(CARD_BG)
     ax.plot(fpr, tpr, color=ACCENT, lw=2.5, label=f"ROC-AUC = {auc:.3f}")
     ax.plot([0,1],[0,1], color=MUTED, lw=1.5, ls="--", label="Random baseline")
     ax.fill_between(fpr, tpr, alpha=0.15, color=ACCENT)
     ax.set_xlabel("False Positive Rate"); ax.set_ylabel("True Positive Rate")
-    ax.set_title("ROC Curve", color=TEXT)
+    ax.set_title("ROC Curve (5-Fold CV)", color=TEXT)
     ax.legend(framealpha=0.3)
 
-    # Metric annotations
-    metrics_text = f"Accuracy  {acc:.3f}\nPrecision {prec:.3f}\nRecall    {rec:.3f}\nF1-Score  {f1:.3f}"
+    metrics_text = f"CV Accuracy {acc:.3f}\nCV F1-Score {f1:.3f}\nCV ROC-AUC  {auc:.3f}"
     ax.text(0.98, 0.20, metrics_text, transform=ax.transAxes,
             fontsize=9, va="bottom", ha="right",
             color=TEXT, fontfamily="monospace",
@@ -443,14 +449,12 @@ def run_classification(df: pd.DataFrame) -> dict:
     print(f"Saved → {out}")
 
     return {
-        "model": "Random Forest Classification",
-        "best_params": best_params,
-        "accuracy":  round(acc, 4),
-        "precision": round(prec, 4),
-        "recall":    round(rec, 4),
-        "f1_score":  round(f1, 4),
-        "roc_auc":   round(auc, 4),
-        "top_features": importances.tail(4).index.tolist()[::-1]
+        "model":    "Logistic Regression Classification",
+        "cv_folds": 5,
+        "accuracy": round(acc, 4),
+        "f1_score": round(f1, 4),
+        "roc_auc":  round(auc, 4),
+        "top_features": coefs.abs().sort_values(ascending=False).index.tolist(),
     }
 
 
@@ -729,7 +733,7 @@ def main():
 
     results = {}
     results["clustering"]      = run_clustering(df)
-    results["classification"]  = run_classification(df)
+    results["classification"]  = run_classification()
     results["regression"]      = run_regression(df)
     results["fpm"]             = run_fpm(df)
 
@@ -749,7 +753,7 @@ def main():
     re = r["regression"]
     fp = r["fpm"]
     print(f"K-Means    Silhouette={cl['silhouette_score']}  DBI={cl['davies_bouldin_index']}")
-    print(f"Rand.Forest  Acc={cf['accuracy']}  F1={cf['f1_score']}  AUC={cf['roc_auc']}")
+    print(f"Log.Reg    Acc={cf['accuracy']}  F1={cf['f1_score']}  AUC={cf['roc_auc']}")
     print(f"Lin.Reg    RMSE={re['rmse']}  R2={re['r2']}")
     print('FP-Growth  Rules=' + str(fp['n_rules']) + '  min_sup=' + str(fp['min_support']))
     print('='*60)

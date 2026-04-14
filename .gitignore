@@ -1,7 +1,12 @@
 .env
+.env.*
 __pycache__/
 *.pyc
 data/raw/
 data/processed/
 venv/
 .venv/
+
+# Claude/Cowork internal settings — may contain tokens
+.claude/
+*.local.json
