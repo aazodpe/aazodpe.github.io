@@ -2219,3 +2219,240 @@ timestamp_utc,region,demand_MW,emissions_lbs_MWh,is_interpolated
     </script>
 </body>
 </html>
+                        <h4 style="color: #f59e0b; margin-bottom: 0.8rem; font-size: 1.05rem;">🏠 Consumers &amp; Communities</h4>
+                        <p style="color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem;">Demand-response programs are most effective when consumers understand the real-time environmental cost of their choices. The association rules we discovered — particularly the high-demand/high-emissions co-occurrence windows — can inform time-of-use pricing signals that nudge consumers toward lower-carbon consumption periods during grid stress events.</p>
+                    </div>
+                    <div>
+                        <h4 style="color: #10b981; margin-bottom: 0.8rem; font-size: 1.05rem;">🔬 Future Researchers</h4>
+                        <p style="color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem;">Our open-source analytical pipeline — from API data collection through feature engineering to clustering and classification — is designed to be reproducible and extensible. Any researcher with WattTime and EIA-930 credentials can apply this methodology to new grid regions, new event types, or new time periods, building a cumulative evidence base for grid environmental performance under stress.</p>
+                    </div>
+                </div>
+            </div>
+
+            <\!-- LIMITATIONS & FUTURE WORK -->
+            <div style="margin-bottom: 2rem;">
+                <h3 style="color: var(--text-primary); font-size: 1.4rem; margin-bottom: 1.5rem; letter-spacing: 0.05em;">Limitations, Improvements &amp; Future Work</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div>
+                        <h4 style="color: #ef4444; margin-bottom: 1rem; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em;">Current Limitations</h4>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="background: var(--bg-card); padding: 1.2rem; border-radius: 8px; border-left: 3px solid #ef4444;">
+                                <strong style="color: var(--text-primary); display: block; margin-bottom: 0.4rem;">Small Event Catalog (n=23)</strong>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; margin: 0;">The classification model trains and tests on 23 event-level observations, making CV estimates noisy. Precision (0.28) is particularly unstable at this sample size. Results are directionally correct but should not be operationalized without a larger event dataset.</p>
+                            </div>
+                            <div style="background: var(--bg-card); padding: 1.2rem; border-radius: 8px; border-left: 3px solid #ef4444;">
+                                <strong style="color: var(--text-primary); display: block; margin-bottom: 0.4rem;">Single Grid Region</strong>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; margin: 0;">All analysis is scoped to CAISO (California). The four-cluster taxonomy, FP-Growth rules, and linear regression coefficients may not generalize to grids with different generation mixes such as ERCOT or PJM.</p>
+                            </div>
+                            <div style="background: var(--bg-card); padding: 1.2rem; border-radius: 8px; border-left: 3px solid #ef4444;">
+                                <strong style="color: var(--text-primary); display: block; margin-bottom: 0.4rem;">Demand-Only Features</strong>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; margin: 0;">The low R² (0.237) in linear regression confirms that demand-side features alone are insufficient for predicting emissions intensity. Weather data, real-time fuel mix, and import/export flows are absent from the current feature set.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="color: #10b981; margin-bottom: 1rem; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em;">Future Work</h4>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="background: var(--bg-card); padding: 1.2rem; border-radius: 8px; border-left: 3px solid #10b981;">
+                                <strong style="color: var(--text-primary); display: block; margin-bottom: 0.4rem;">Expand Event Catalog &amp; Features</strong>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; margin: 0;">Extend the dataset to 200+ events across multiple years and grid regions. Incorporate weather covariates (temperature, wind speed), real-time fuel mix percentages, and inter-regional power flows as additional predictors for the classifier and regression models.</p>
+                            </div>
+                            <div style="background: var(--bg-card); padding: 1.2rem; border-radius: 8px; border-left: 3px solid #10b981;">
+                                <strong style="color: var(--text-primary); display: block; margin-bottom: 0.4rem;">Real-Time Monitoring Dashboard</strong>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; margin: 0;">Automate the data pipeline to run every 15 minutes, classify the current grid state in real time, and alert operators when the Peaker-Stress cluster centroid is approached. The clustering infrastructure developed here provides a natural foundation for such a system.</p>
+                            </div>
+                            <div style="background: var(--bg-card); padding: 1.2rem; border-radius: 8px; border-left: 3px solid #10b981;">
+                                <strong style="color: var(--text-primary); display: block; margin-bottom: 0.4rem;">Deep Learning for Time-Series Patterns</strong>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; margin: 0;">Replace the hand-crafted event-level feature engineering with LSTM or Transformer-based sequence models that can learn directly from the raw 5-minute MOER and hourly demand time series, potentially capturing temporal patterns invisible to aggregate statistics.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <\!-- CLOSING STATEMENT -->
+            <div style="margin-top: 3rem; padding: 2.5rem; background: linear-gradient(135deg, rgba(20,184,166,0.1) 0%, rgba(79,70,229,0.1) 100%); border: 1px solid rgba(20,184,166,0.3); border-radius: 12px; text-align: center;">
+                <p style="color: var(--text-primary); font-size: 1.15rem; line-height: 1.8; max-width: 800px; margin: 0 auto;">
+                    Grid emergencies are not anomalies to be explained away — they are an increasingly regular feature of a climate-stressed energy system. By making the carbon cost of those events visible, measurable, and predictable, this project takes one step toward a future where reliability and decarbonization are managed together, not traded against each other.
+                </p>
+                <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--accent-primary);">4</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em;">Models Implemented</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--accent-secondary);">34</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em;">Association Rules Found</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: #f59e0b;">0.65</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em;">Classifier AUC</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: #10b981;">52,711</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em;">Emissions Readings Analyzed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="team">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-number">09 // TEAM</div>
+                <h2>Meet the Research Team</h2>
+                <p class="section-description">
+                    A multidisciplinary group bringing together expertise in data science, energy systems, and environmental analysis
+                </p>
+            </div>
+
+            <div class="team-grid">
+                <div class="team-member">
+                    <div class="member-avatar">MK</div>
+                    <div class="member-name">Moulik Kumar</div>
+                    <div class="member-role">Dataset Acquisition + Integration</div>
+                    <p class="member-bio">
+                        Identified dynamic energy datasets (WattTime API and EIA-930) and evaluated their relevance for analyzing hazardous grid events. Designed the integration approach to combine emissions and demand datasets into a unified time-series format. Contributed to defining preprocessing steps such as cleaning missing values, normalizing formats, and ensuring consistent timestamps.
+                    </p>
+                    <div class="member-links">
+                        <a href="#" title="LinkedIn">in</a>
+                        <a href="#" title="GitHub">git</a>
+                        <a href="#" title="Portfolio">web</a>
+                    </div>
+                </div>
+
+                <div class="team-member">
+                    <div class="member-avatar">AZ</div>
+                    <div class="member-name">Atharva Zodpe</div>
+                    <div class="member-role">Website Development + Content Structuring</div>
+                    <p class="member-bio">
+                        Built and deployed the project website using GitHub Pages, implementing required milestone sections (Introduction, Proposal Overview, Team). Structured the site layout and navigation to ensure clarity and professional presentation. Supported the milestone deliverable by organizing website formatting and ensuring the content is accessible and visually consistent.
+                    </p>
+                    <div class="member-links">
+                        <a href="#" title="LinkedIn">in</a>
+                        <a href="#" title="GitHub">git</a>
+                        <a href="#" title="Email">@</a>
+                    </div>
+                </div>
+
+                <div class="team-member">
+                    <div class="member-avatar">PP</div>
+                    <div class="member-name">Pratik Patil</div>
+                    <div class="member-role">Exploratory Analysis + Feature Engineering</div>
+                    <p class="member-bio">
+                        Performed early exploratory data analysis on the energy dataset to inspect distributions, missing values, and temporal patterns in demand and marginal emissions. Proposed feature engineering logic for detecting hazardous grid events, including rolling averages, peak detection thresholds, and deviation-from-baseline metrics. Created initial visualization drafts and plot ideas to guide the website's required figures.
+                    </p>
+                    <div class="member-links">
+                        <a href="#" title="LinkedIn">in</a>
+                        <a href="#" title="GitHub">git</a>
+                        <a href="#" title="Email">@</a>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 4rem; padding: 2.5rem; background: var(--bg-card); border-left: 4px solid var(--accent-secondary); border-radius: 8px;">
+                <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Team Mission Statement</h3>
+                <p style="color: var(--text-secondary); font-size: 1.05rem; line-height: 1.8;">
+                    We are committed to advancing the understanding of electricity grid resilience and environmental impacts through rigorous data analysis and transparent communication. Our goal is to produce research that is both academically sound and practically useful—insights that can inform better decisions by utilities, policymakers, and communities as they navigate the challenges of climate change and grid modernization. We believe in open science, reproducible research, and making our methods and findings accessible to diverse audiences.
+                </p>
+            </div>
+
+            <div style="margin-top: 3rem;">
+                <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Team Roles & Responsibilities</h3>
+                <div class="content-grid">
+                    <div class="card">
+                        <h3>Dataset Acquisition + Integration</h3>
+                        <p><strong>Moulik Kumar</strong> identifies and evaluates data sources, designs integration approaches, and defines preprocessing workflows for unified time-series analysis</p>
+                    </div>
+                    <div class="card">
+                        <h3>Website Development + Content</h3>
+                        <p><strong>Atharva Zodpe</strong> builds and deploys the project website, structures site layout and navigation, and ensures professional presentation of all deliverables</p>
+                    </div>
+                    <div class="card">
+                        <h3>Exploratory Analysis + Feature Engineering</h3>
+                        <p><strong>Pratik Patil</strong> performs data exploration, proposes feature engineering logic for event detection, and creates visualization drafts for analysis guidance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Group 4 - Grid Resilience & Carbon Analytics Project</p>
+            <p>
+                <a href="https://github.com/aazodpe/aazodpe.github.io" target="_blank">GitHub Repository</a> | 
+                <a href="#introduction">Back to Top</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                
+                // Update active state
+                document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Smooth scroll
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+        });
+
+        // Update active nav link on scroll
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('nav a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card, .team-member, .question-item, .stat-box').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
+    </script>
+</body>
+</html>

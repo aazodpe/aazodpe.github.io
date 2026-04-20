@@ -158,8 +158,8 @@ Our data cleaning pipeline addresses:
 
 - ✅ **Milestone 1:** Project framing, research questions, website launch
 - ✅ **Milestone 2:** Data collection, cleaning, exploratory analysis
-- ⏳ **Milestone 3:** Feature engineering, clustering analysis
-- ⏳ **Milestone 4:** Final analysis, comprehensive reporting
+- ✅ **Milestone 3:** Feature engineering, clustering analysis
+- ✅ **Milestone 4:** Final analysis, comprehensive reporting
 
 ## Contributing
 
@@ -178,7 +178,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Contact
 
-**Project Website:** [https://your-website-url.github.io](https://your-website-url.github.io)
+**Project Website:** [https://aazodpe.github.io/](https://aazodpe.github.io/)
 
 **Team Email:** group4-grid-analytics@university.edu
 
